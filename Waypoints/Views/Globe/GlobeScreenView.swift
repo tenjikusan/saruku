@@ -31,6 +31,7 @@ public struct GlobeScreenView: View {
     @State private var showingSaveTappedPinSheet: Bool = false
     @State private var showingQuickAddSheet: Bool = false
     @State private var showingSearchSheet: Bool = false
+    @State private var use3DGlobe: Bool = true
     
     private let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
     
@@ -61,24 +62,44 @@ public struct GlobeScreenView: View {
                 WaypointsColors.sandLight
                     .ignoresSafeArea()
                 
-                // Native 3D Interactive Globe
-                NativeGlobeView(
-                    places: displayedPlaces,
-                    selectedPlace: selectedPlace,
-                    isTapModeActive: displayMode == .pickLocation,
-                    onPlaceSelected: { place in
-                        hapticFeedback.impactOccurred()
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                            selectedPlace = place
+                // Hardware-Accelerated 3D SceneKit Globe or Cartographic Canvas Globe
+                if use3DGlobe {
+                    SceneKitGlobeView(
+                        places: displayedPlaces,
+                        selectedPlace: selectedPlace,
+                        isTapModeActive: displayMode == .pickLocation,
+                        onPlaceSelected: { place in
+                            hapticFeedback.impactOccurred()
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                selectedPlace = place
+                            }
+                        },
+                        onGlobeTapped: { lat, lon in
+                            hapticFeedback.impactOccurred()
+                            tappedCoordinate = (lat, lon)
+                            showingSaveTappedPinSheet = true
                         }
-                    },
-                    onGlobeTapped: { lat, lon in
-                        hapticFeedback.impactOccurred()
-                        tappedCoordinate = (lat, lon)
-                        showingSaveTappedPinSheet = true
-                    }
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    NativeGlobeView(
+                        places: displayedPlaces,
+                        selectedPlace: selectedPlace,
+                        isTapModeActive: displayMode == .pickLocation,
+                        onPlaceSelected: { place in
+                            hapticFeedback.impactOccurred()
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                selectedPlace = place
+                            }
+                        },
+                        onGlobeTapped: { lat, lon in
+                            hapticFeedback.impactOccurred()
+                            tappedCoordinate = (lat, lon)
+                            showingSaveTappedPinSheet = true
+                        }
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
                 
                 // Overlay Controls (Top & Bottom)
                 VStack {
@@ -181,6 +202,22 @@ public struct GlobeScreenView: View {
             .background(Color.white)
             .clipShape(Capsule())
             .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
+            
+            // 3D SceneKit vs Cartographic Globe Toggle
+            Button {
+                hapticFeedback.impactOccurred()
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    use3DGlobe.toggle()
+                }
+            } label: {
+                Image(systemName: use3DGlobe ? "globe.americas.fill" : "map")
+                    .font(.system(size: 14, weight: .semibold))
+                    .padding(9)
+                    .background(use3DGlobe ? WaypointsColors.deepForest : Color.white)
+                    .foregroundStyle(use3DGlobe ? .white : WaypointsColors.deepForest)
+                    .clipShape(Circle())
+                    .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
+            }
             
             // Search button
             Button {

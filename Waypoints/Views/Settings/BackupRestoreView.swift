@@ -154,15 +154,25 @@ public struct BackupRestoreView: View {
                     throw ImportError.invalidData("Selected file is not valid UTF-8 text.")
                 }
                 
-                let importResult = try LegacyBackupImporter.parseAndImport(
-                    jsonString: jsonString,
-                    mode: importMode,
-                    context: modelContext
-                )
-                
-                alertTitle = "Import Complete"
-                alertMessage = importResult.summaryMessage
-                showingAlert = true
+                if jsonString.contains("waypoints.native.v2") {
+                    let summary = try NativeBackupService.importBackup(
+                        from: jsonString,
+                        context: modelContext,
+                        strategy: importMode == .replace ? .replace : .merge
+                    )
+                    alertTitle = "Native Backup Restored"
+                    alertMessage = "Successfully imported \(summary.placesCount) places, \(summary.tripsCount) trips, \(summary.collectionsCount) collections, \(summary.journalEntriesCount) journal entries, and restored \(summary.mediaRestoredCount) photos."
+                    showingAlert = true
+                } else {
+                    let importResult = try LegacyBackupImporter.parseAndImport(
+                        jsonString: jsonString,
+                        mode: importMode,
+                        context: modelContext
+                    )
+                    alertTitle = "Import Complete"
+                    alertMessage = importResult.summaryMessage
+                    showingAlert = true
+                }
             } catch {
                 alertTitle = "Import Failed"
                 alertMessage = error.localizedDescription

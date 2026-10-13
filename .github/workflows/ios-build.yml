@@ -2,9 +2,9 @@ name: Native iOS Build & Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'feature/**', 'release/**' ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, 'feature/**', 'release/**' ]
   workflow_dispatch:
 
 concurrency:
@@ -49,6 +49,17 @@ jobs:
           xcodebuild build \
             -project Waypoints.xcodeproj \
             -scheme WaypointsShare \
+            -destination "generic/platform=iOS Simulator" \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Build Widget Extension
+        run: |
+          xcodebuild build \
+            -project Waypoints.xcodeproj \
+            -scheme WaypointsWidget \
             -destination "generic/platform=iOS Simulator" \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \

@@ -6,6 +6,11 @@ public enum DeepLinkDestination: Equatable, Sendable {
     case trip(id: String)
     case globe
     case favorites
+    case places
+    case collections
+    case search
+    case journal
+    case discoveries
 }
 
 public enum DeepLinkRouter {
@@ -20,18 +25,31 @@ public enum DeepLinkRouter {
             return .globe
         case "favorites":
             return .favorites
+        case "places":
+            return .places
+        case "collections":
+            return .collections
+        case "search":
+            return .search
+        case "journal":
+            return .journal
+        case "discoveries":
+            return .discoveries
         case "place":
             if let id = pathComponents.first, !id.isEmpty {
                 return .place(id: id)
             }
+            return .places
         case "discovery":
             if let id = pathComponents.first, !id.isEmpty {
                 return .discovery(id: id)
             }
+            return .discoveries
         case "trip":
             if let id = pathComponents.first, !id.isEmpty {
                 return .trip(id: id)
             }
+            return .collections
         default:
             break
         }

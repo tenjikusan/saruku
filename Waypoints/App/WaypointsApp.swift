@@ -69,12 +69,24 @@ public struct WaypointsApp: App {
         
         let context = container.mainContext
         for item in items {
+            var imageFileNames: [String] = []
+            if let imgName = item.imageFileName,
+               let sharedDir = AppGroupShareQueue.shared.sharedImagesDirectoryURL {
+                let sourceURL = sharedDir.appendingPathComponent(imgName)
+                if let data = try? Data(contentsOf: sourceURL),
+                   let savedName = LocalMediaStorage.shared.saveImage(data: data, preferredName: imgName) {
+                    imageFileNames.append(savedName)
+                    try? FileManager.default.removeItem(at: sourceURL)
+                }
+            }
+            
             let discovery = Discovery(
                 originalURL: item.url ?? "",
                 caption: item.caption ?? "",
                 collectionName: "Dream trips",
                 status: .savedAwaiting,
-                statusMessage: "Shared from iOS Share Extension"
+                statusMessage: "Shared from iOS Share Extension",
+                imageFileNames: imageFileNames
             )
             
             // Auto-trigger discovery pipeline in background

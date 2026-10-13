@@ -18,6 +18,9 @@ public enum CoordinateProvenance: String, Codable, CaseIterable, Sendable {
     /// Pre-packaged offline demo landmark (clearly flagged to prevent confusion with live geocoding)
     case demoData = "demo_data"
     
+    /// Synchronized from user's private CloudKit database
+    case cloudKitSync = "cloudkit_sync"
+    
     public var displayName: String {
         switch self {
         case .verifiedLink: return "Verified Link"
@@ -25,6 +28,7 @@ public enum CoordinateProvenance: String, Codable, CaseIterable, Sendable {
         case .globeTap: return "Globe Tap"
         case .userEntry: return "Manual Entry"
         case .demoData: return "Demo Index"
+        case .cloudKitSync: return "iCloud Sync"
         }
     }
     
@@ -35,6 +39,7 @@ public enum CoordinateProvenance: String, Codable, CaseIterable, Sendable {
         case .globeTap: return "globe.americas.fill"
         case .userEntry: return "hand.tap.fill"
         case .demoData: return "sparkles"
+        case .cloudKitSync: return "icloud.fill"
         }
     }
 }

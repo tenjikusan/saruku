@@ -27,6 +27,32 @@ public struct OpenFavoritesIntent: AppIntent {
     }
 }
 
+public struct OpenTripIntent: AppIntent {
+    public static var title: LocalizedStringResource = "Open Upcoming Trip"
+    public static var description = IntentDescription("Opens your planned trips and itineraries in Waypoints.")
+    public static var openAppWhenRun: Bool = true
+    
+    public init() {}
+    
+    @MainActor
+    public func perform() async throws -> some IntentResult {
+        return .result()
+    }
+}
+
+public struct SearchPlacesIntent: AppIntent {
+    public static var title: LocalizedStringResource = "Search Saved Places"
+    public static var description = IntentDescription("Opens unified search to find saved places or explore the world.")
+    public static var openAppWhenRun: Bool = true
+    
+    public init() {}
+    
+    @MainActor
+    public func perform() async throws -> some IntentResult {
+        return .result()
+    }
+}
+
 public struct AddDiscoveryIntent: AppIntent {
     public static var title: LocalizedStringResource = "Add a Discovery Link"
     public static var description = IntentDescription("Quickly saves a travel URL or location note to Waypoints.")
@@ -71,6 +97,24 @@ public struct WaypointsShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Open Favorites",
             systemImageName: "star.fill"
+        )
+        AppShortcut(
+            intent: OpenTripIntent(),
+            phrases: [
+                "Open my \(.applicationName) trips",
+                "Show next trip in \(.applicationName)"
+            ],
+            shortTitle: "Open Trips",
+            systemImageName: "airplane"
+        )
+        AppShortcut(
+            intent: SearchPlacesIntent(),
+            phrases: [
+                "Search in \(.applicationName)",
+                "Find places in \(.applicationName)"
+            ],
+            shortTitle: "Search Places",
+            systemImageName: "magnifyingglass"
         )
     }
 }

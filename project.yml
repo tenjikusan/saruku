@@ -34,9 +34,11 @@ targets:
         GENERATE_INFOPLIST_KEY_UILaunchScreen_Generation: YES
     dependencies:
       - target: WaypointsShare
+      - target: WaypointsWidget
     frameworks:
       - framework: SwiftData.framework
       - framework: RealityKit.framework
+      - framework: SceneKit.framework
       - framework: Vision.framework
       - framework: NaturalLanguage.framework
       - framework: PhotosUI.framework
@@ -45,6 +47,7 @@ targets:
       - framework: AppIntents.framework
       - framework: WidgetKit.framework
       - framework: ImageIO.framework
+      - framework: CloudKit.framework
 
   WaypointsShare:
     type: app-extension
@@ -60,6 +63,22 @@ targets:
     frameworks:
       - framework: UniformTypeIdentifiers.framework
       - framework: Social.framework
+
+  WaypointsWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: WaypointsWidget
+      - path: Waypoints/Services/Widgets/WidgetSnapshotService.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.waypoints.atlas.WidgetExtension
+        PRODUCT_NAME: WaypointsWidget
+        INFOPLIST_FILE: WaypointsWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: WaypointsWidget/Entitlements/WaypointsWidget.entitlements
+    frameworks:
+      - framework: WidgetKit.framework
+      - framework: SwiftUI.framework
 
   WaypointsTests:
     type: bundle.unit-test
