@@ -1,6 +1,8 @@
 import Foundation
+import SwiftData
 
-/// Unified 10-step discovery processing and location resolution pipeline.
+/// Unified discovery processing and location resolution pipeline supporting single,
+/// multi-location candidate extraction, image OCR, EXIF GPS tags, and batch processing.
 public final class DiscoveryPipeline: @unchecked Sendable {
     public static let shared = DiscoveryPipeline()
     
@@ -71,7 +73,31 @@ public final class DiscoveryPipeline: @unchecked Sendable {
             candidates.append(candidate)
         }
         
-        // If direct coordinates were found, transition immediately to confirmation
+        // Step 3: Check attached images for embedded EXIF GPS tags
+        for imageFileName in discovery.imageFileNames {
+            let fileURL = LocalMediaStorage.shared.absoluteURL(for: imageFileName)
+            if let photoGPS = ImageMetadataExtractor.extractGPSCoordinates(from: fileURL) {
+                let namePrefix = !discovery.caption.isEmpty ? String(discovery.caption.prefix(35)) : "Photo Location"
+                evidence.append("Extracted embedded EXIF GPS tags from photo \"\(imageFileName)\"")
+                let candidate = LocationCandidate(
+                    name: namePrefix,
+                    country: String(format: "Photo GPS (%.4f, %.4f)", photoGPS.latitude, photoGPS.longitude),
+                    latitude: photoGPS.latitude,
+                    longitude: photoGPS.longitude,
+                    precision: "exact",
+                    source: "Photo EXIF Metadata",
+                    attribution: "Photograph Metadata",
+                    evidence: "Found GPS coordinates embedded in photograph metadata",
+                    provenance: .userEntry,
+                    requiresConfirmation: false,
+                    isDemo: false
+                )
+                candidates.append(candidate)
+                break
+            }
+        }
+        
+        // If exact coordinates were found from link, text, or EXIF, transition to confirmation
         if !candidates.isEmpty {
             discovery.candidates = candidates
             discovery.selectedCandidate = candidates.first
@@ -85,10 +111,10 @@ public final class DiscoveryPipeline: @unchecked Sendable {
             return discovery
         }
         
-        // Step 3: Extract place name clues from URL & caption
+        // Step 4: Extract place name clues from URL & caption
         var clues = LinkExtractor.extractPlaceNameCandidates(url: discovery.originalURL, caption: discovery.caption)
         
-        // Step 4: Extract entities via Apple NaturalLanguage
+        // Step 5: Extract entities via Apple NaturalLanguage
         if !discovery.caption.isEmpty {
             let nlClues = naturalLanguage.extractLocationEntities(from: discovery.caption)
             for clue in nlClues {
@@ -98,7 +124,25 @@ public final class DiscoveryPipeline: @unchecked Sendable {
             }
         }
         
-        // Step 5: Check social metadata for accessible public links or platform notices
+        // Step 6: If discovery has an image and no clues yet, run Apple Vision OCR on the image
+        if clues.isEmpty && !discovery.imageFileNames.isEmpty {
+            for imageFileName in discovery.imageFileNames {
+                if let uiImage = LocalMediaStorage.shared.loadImage(fileName: imageFileName) {
+                    let ocrResult = await visionOCR.recognizeText(in: uiImage)
+                    if !ocrResult.recognizedText.isEmpty {
+                        evidence.append("Extracted text via Apple Vision OCR from image \"\(imageFileName)\"")
+                        let ocrClues = naturalLanguage.extractLocationEntities(from: ocrResult.recognizedText)
+                        for clue in ocrClues {
+                            if !clues.contains(where: { $0.name.lowercased() == clue.name.lowercased() }) {
+                                clues.append(clue)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Step 7: Check social metadata for accessible public links or platform notices
         var socialNotice: String? = nil
         if clues.isEmpty && !discovery.originalURL.isEmpty {
             let meta = await socialMetadata.fetchMetadata(for: discovery.originalURL)
@@ -113,11 +157,11 @@ public final class DiscoveryPipeline: @unchecked Sendable {
             }
         }
         
-        // Step 6: Search places via GeocodingEngine
+        // Step 8: Search places via GeocodingEngine (searches up to 8 distinct clues)
         if !clues.isEmpty {
             evidence.append("Found \(clues.count) place clue(s): " + clues.map { "\"\($0.name)\"" }.joined(separator: ", "))
             
-            for clue in clues.prefix(3) {
+            for clue in clues.prefix(8) {
                 let matches = await geocodingEngine.search(query: clue.name)
                 for m in matches {
                     if !candidates.contains(where: { abs($0.latitude - m.latitude) < 0.0001 && abs($0.longitude - m.longitude) < 0.0001 }) {
@@ -136,7 +180,7 @@ public final class DiscoveryPipeline: @unchecked Sendable {
             return discovery
         }
         
-        // Step 7: Inaccessible / No clues found
+        // Step 9: Inaccessible / No clues found
         let fallbackMsg = socialNotice ?? "The app does not fetch social post captions or private webpage contents. Please paste a caption, place name, or coordinates, or pick manually on the globe."
         discovery.candidates = []
         discovery.selectedCandidate = nil
@@ -148,7 +192,67 @@ public final class DiscoveryPipeline: @unchecked Sendable {
         return discovery
     }
     
-    // MARK: - Place Conversion
+    // MARK: - Process and Save in Context
+    
+    @MainActor
+    public func processDiscovery(discovery: Discovery, context: ModelContext) async {
+        let updated = await identifyLocation(for: discovery)
+        try? context.save()
+    }
+    
+    // MARK: - Multi-Location Confirmation to Places
+    
+    @MainActor
+    public func convertCandidatesToPlaces(
+        discovery: Discovery,
+        candidates: [LocationCandidate],
+        targetCollection: CollectionModel? = nil
+    ) -> [Place] {
+        var createdPlaces: [Place] = []
+        
+        for (index, candidate) in candidates.enumerated() {
+            // Stable ID per candidate to guarantee idempotent retries
+            let stableId = "place_\(discovery.id)_\(index)"
+            
+            let sourceRef = !discovery.originalURL.isEmpty
+                ? [SourceReference(url: discovery.originalURL, platformName: "Discovery", title: discovery.caption)]
+                : []
+            
+            let place = Place(
+                id: stableId,
+                name: candidate.name,
+                country: candidate.country,
+                latitude: candidate.latitude,
+                longitude: candidate.longitude,
+                precision: candidate.precision,
+                provenance: candidate.provenance,
+                sourceURL: !discovery.originalURL.isEmpty ? discovery.originalURL : nil,
+                note: discovery.caption,
+                isFavorite: false,
+                isVisited: false,
+                source: candidate.source,
+                evidence: candidate.evidence,
+                discoveryId: discovery.id,
+                imageFileNames: discovery.imageFileNames,
+                sourceReferences: sourceRef
+            )
+            
+            if let col = targetCollection {
+                place.collections.append(col)
+            }
+            
+            createdPlaces.append(place)
+        }
+        
+        discovery.status = .locationConfirmed
+        if let first = createdPlaces.first {
+            discovery.confirmedPlaceId = first.id
+        }
+        
+        return createdPlaces
+    }
+    
+    // MARK: - Single Place Conversion (Backwards Compatible)
     
     public func convertDiscoveryToPlace(
         discovery: Discovery,
@@ -178,10 +282,11 @@ public final class DiscoveryPipeline: @unchecked Sendable {
         let country = (overrideCountry ?? chosen?.country ?? "Location saved").trimmingCharacters(in: .whitespacesAndNewlines)
         let provenance = overrideProvenance ?? chosen?.provenance ?? .userEntry
         
-        // Derive stable place ID from discovery ID so retries are strictly idempotent
         let stableId = discovery.confirmedPlaceId ?? ("place_" + discovery.id)
-        let themes = ["lake", "temple", "desert"]
-        let randomTheme = themes.randomElement() ?? "lake"
+        
+        let sourceRef = !discovery.originalURL.isEmpty
+            ? [SourceReference(url: discovery.originalURL, platformName: "Discovery", title: discovery.caption)]
+            : []
         
         let place = Place(
             id: stableId,
@@ -195,10 +300,11 @@ public final class DiscoveryPipeline: @unchecked Sendable {
             note: discovery.caption,
             isFavorite: false,
             isVisited: false,
-            theme: randomTheme,
             source: chosen?.source ?? "Manual pin",
             evidence: chosen?.evidence ?? "Confirmed by user",
-            discoveryId: discovery.id
+            discoveryId: discovery.id,
+            imageFileNames: discovery.imageFileNames,
+            sourceReferences: sourceRef
         )
         
         discovery.status = .locationConfirmed

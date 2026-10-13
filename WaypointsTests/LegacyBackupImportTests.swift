@@ -9,7 +9,7 @@ final class LegacyBackupImportTests: XCTestCase {
     var modelContext: ModelContext!
     
     override func setUp() async throws {
-        let schema = Schema([Place.self, Discovery.self, CollectionModel.self])
+        let schema = Schema([Place.self, Discovery.self, CollectionModel.self, Trip.self, ItineraryDay.self, ItineraryStop.self, JournalEntry.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         modelContainer = try ModelContainer(for: schema, configurations: [config])
         modelContext = modelContainer.mainContext

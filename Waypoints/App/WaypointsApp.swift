@@ -12,7 +12,11 @@ public struct WaypointsApp: App {
             let schema = Schema([
                 Place.self,
                 Discovery.self,
-                CollectionModel.self
+                CollectionModel.self,
+                Trip.self,
+                ItineraryDay.self,
+                ItineraryStop.self,
+                JournalEntry.self
             ])
             let modelConfiguration = ModelConfiguration(
                 schema: schema,

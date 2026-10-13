@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 public struct PlaceDetailView: View {
     @Environment(\.dismiss) private var dismiss
@@ -10,7 +11,13 @@ public struct PlaceDetailView: View {
     
     @State private var showingEditSheet = false
     @State private var showingDeleteConfirmation = false
+    @State private var showingAddSourceSheet = false
+    @State private var showingShareSheet = false
+    @State private var selectedPhotoItem: PhotosPickerItem? = nil
     @State private var copiedCoords = false
+    @State private var previewImageFileName: String? = nil
+    
+    private let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
     
     public init(place: Place) {
         self.place = place
@@ -22,8 +29,11 @@ public struct PlaceDetailView: View {
                 // Header Banner
                 headerSection
                 
-                // Action Buttons
+                // Navigation and Share Actions
                 actionsRow
+                
+                // Photo Attachments Section
+                photoAttachmentsSection
                 
                 // Provenance & Metadata Card
                 metadataCard
@@ -34,10 +44,8 @@ public struct PlaceDetailView: View {
                 // Notes Section
                 notesSection
                 
-                // Source & Discovery Link
-                if let sourceURL = place.sourceURL, !sourceURL.isEmpty {
-                    sourceSection(url: sourceURL)
-                }
+                // Multiple Source References Section
+                multipleSourcesSection
                 
                 // Delete Button
                 deleteSection
@@ -49,15 +57,53 @@ public struct PlaceDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Edit") {
-                    showingEditSheet = true
+                Menu {
+                    Button {
+                        showingEditSheet = true
+                    } label: {
+                        Label("Edit Details", systemName: "pencil")
+                    }
+                    
+                    Button {
+                        showingAddSourceSheet = true
+                    } label: {
+                        Label("Attach Source Link", systemName: "link.badge.plus")
+                    }
+                    
+                    Button {
+                        showingShareSheet = true
+                    } label: {
+                        Label("Share Place", systemName: "square.and.arrow.up")
+                    }
+                    
+                    Button(role: .destructive) {
+                        showingDeleteConfirmation = true
+                    } label: {
+                        Label("Delete Waypoint", systemName: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.system(size: 18))
+                        .foregroundStyle(WaypointsColors.deepForest)
                 }
-                .fontWeight(.semibold)
-                .foregroundStyle(WaypointsColors.deepForest)
             }
         }
         .sheet(isPresented: $showingEditSheet) {
             EditPlaceSheet(place: place)
+        }
+        .sheet(isPresented: $showingAddSourceSheet) {
+            AddSourceReferenceSheet(place: place)
+        }
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(items: [
+                "📍 \(place.name)\n\(place.country.isEmpty ? "" : place.country + "\n")Coordinates: \(place.formattedCoordinates)\n\(place.note.isEmpty ? "" : "\n" + place.note + "\n")Saved with Waypoints"
+            ])
+        }
+        .sheet(item: Binding<PreviewImageItem?>(
+            get: { previewImageFileName.map { PreviewImageItem(fileName: $0) } },
+            set: { previewImageFileName = $0?.fileName }
+        )) { item in
+            ImagePreviewModal(fileName: item.fileName)
         }
         .alert("Delete Waypoint", isPresented: $showingDeleteConfirmation) {
             Button("Delete", role: .destructive) {
@@ -69,6 +115,8 @@ public struct PlaceDetailView: View {
         }
     }
     
+    // MARK: - Header Section
+    
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top) {
@@ -77,8 +125,9 @@ public struct PlaceDetailView: View {
                         .font(WaypointsTypography.display(26))
                         .foregroundStyle(WaypointsColors.deepForest)
                     
-                    if !place.country.isEmpty {
-                        Text(place.country)
+                    let locationSubtitle = [place.city, place.region, place.country].filter { !$0.isEmpty }.joined(separator: ", ")
+                    if !locationSubtitle.isEmpty {
+                        Text(locationSubtitle)
                             .font(WaypointsTypography.title(16))
                             .foregroundStyle(.secondary)
                     }
@@ -87,22 +136,24 @@ public struct PlaceDetailView: View {
                 
                 HStack(spacing: 12) {
                     Button {
+                        hapticFeedback.impactOccurred()
                         place.isFavorite.toggle()
                         place.updatedAt = Date()
                         try? modelContext.save()
                     } label: {
                         Image(systemName: place.isFavorite ? "star.fill" : "star")
-                            .font(.system(size: 20))
+                            .font(.system(size: 22))
                             .foregroundStyle(place.isFavorite ? WaypointsColors.sunsetAmber : .secondary)
                     }
                     
                     Button {
+                        hapticFeedback.impactOccurred()
                         place.isVisited.toggle()
                         place.updatedAt = Date()
                         try? modelContext.save()
                     } label: {
                         Image(systemName: place.isVisited ? "checkmark.seal.fill" : "checkmark.seal")
-                            .font(.system(size: 20))
+                            .font(.system(size: 22))
                             .foregroundStyle(place.isVisited ? WaypointsColors.deepForest : .secondary)
                     }
                 }
@@ -119,6 +170,7 @@ public struct PlaceDetailView: View {
                 Button {
                     UIPasteboard.general.string = "\(place.latitude),\(place.longitude)"
                     copiedCoords = true
+                    hapticFeedback.impactOccurred()
                     Task {
                         try? await Task.sleep(nanoseconds: 2_000_000_000)
                         copiedCoords = false
@@ -137,12 +189,14 @@ public struct PlaceDetailView: View {
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
+    // MARK: - Actions Row
+    
     private var actionsRow: some View {
         HStack(spacing: 12) {
             Button {
                 openInMaps()
             } label: {
-                Label("Open in Apple Maps", systemName: "map.fill")
+                Label("Apple Maps", systemName: "map.fill")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -151,25 +205,96 @@ public struct PlaceDetailView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             
-            if let sourceURL = place.sourceURL, let url = URL(string: sourceURL) {
-                Button {
-                    openURL(url)
-                } label: {
-                    Label("Source Link", systemName: "arrow.up.right.square")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(WaypointsColors.deepForest)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(WaypointsColors.deepForest.opacity(0.2), lineWidth: 1)
-                        )
-                }
+            Button {
+                openDirections()
+            } label: {
+                Label("Directions", systemName: "arrow.triangle.turn.up.right.diamond.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(WaypointsColors.deepForest)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(WaypointsColors.deepForest.opacity(0.25), lineWidth: 1)
+                    )
             }
         }
     }
+    
+    // MARK: - Photo Attachments Section
+    
+    private var photoAttachmentsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Saved Photos & Screenshots")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(WaypointsColors.deepForest)
+                
+                Spacer()
+                
+                PhotosPicker(
+                    selection: $selectedPhotoItem,
+                    matching: .images,
+                    photoLibrary: .shared()
+                ) {
+                    Label("Add Photo", systemName: "photo.badge.plus")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(WaypointsColors.deepForest)
+                }
+                .onChange(of: selectedPhotoItem) { _, item in
+                    if let item {
+                        attachPhoto(item)
+                    }
+                }
+            }
+            
+            if place.imageFileNames.isEmpty {
+                Text("No screenshots or photos attached.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .italic()
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(place.imageFileNames, id: \.self) { fileName in
+                            if let img = LocalMediaStorage.shared.loadImage(fileName: fileName) {
+                                ZStack(alignment: .topTrailing) {
+                                    Image(uiImage: img)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 90, height: 90)
+                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                        .onTapGesture {
+                                            previewImageFileName = fileName
+                                        }
+                                    
+                                    Button {
+                                        place.removeImageFileName(fileName)
+                                        try? modelContext.save()
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .font(.system(size: 18))
+                                            .foregroundStyle(.red)
+                                            .background(Circle().fill(Color.white))
+                                    }
+                                    .offset(x: 4, y: -4)
+                                }
+                            }
+                        }
+                    }
+                    .padding(.top, 4)
+                }
+            }
+        }
+        .padding(16)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+    }
+    
+    // MARK: - Metadata Card
     
     private var metadataCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -215,6 +340,8 @@ public struct PlaceDetailView: View {
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
+    // MARK: - Collections Section
+    
     private var collectionsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Collections")
@@ -251,6 +378,8 @@ public struct PlaceDetailView: View {
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
+    // MARK: - Notes Section
+    
     private var notesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Notes & Details")
@@ -276,23 +405,80 @@ public struct PlaceDetailView: View {
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
-    private func sourceSection(url: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Original Source")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(WaypointsColors.deepForest)
+    // MARK: - Multiple Source References Section
+    
+    private var multipleSourcesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Content Sources")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(WaypointsColors.deepForest)
+                
+                Spacer()
+                
+                Button {
+                    showingAddSourceSheet = true
+                } label: {
+                    Label("Add Source", systemName: "plus")
+                        .font(.caption)
+                        .foregroundStyle(WaypointsColors.deepForest)
+                }
+            }
             
-            Text(url)
-                .font(.caption)
-                .foregroundStyle(WaypointsColors.deepForest)
-                .lineLimit(2)
+            // Primary link if available
+            if let primary = place.sourceURL, !primary.isEmpty {
+                sourceItemRow(url: primary, platform: "Primary Source", title: place.name)
+            }
+            
+            // Multiple source references
+            ForEach(place.sourceReferences) { ref in
+                sourceItemRow(url: ref.url, platform: ref.platformName, title: ref.title)
+            }
+            
+            if place.sourceURL == nil && place.sourceReferences.isEmpty {
+                Text("No external links attached to this waypoint.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .italic()
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
+    
+    private func sourceItemRow(url: String, platform: String, title: String) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(platform)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(WaypointsColors.deepForest)
+                Text(url)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            if let destURL = URL(string: url) {
+                Button {
+                    openURL(destURL)
+                } label: {
+                    Image(systemName: "arrow.up.right.square")
+                        .font(.system(size: 16))
+                        .foregroundStyle(WaypointsColors.deepForest)
+                }
+            }
+        }
+        .padding(8)
+        .background(WaypointsColors.mintMist.opacity(0.4))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+    
+    // MARK: - Delete Section
     
     private var deleteSection: some View {
         Button(role: .destructive) {
@@ -326,9 +512,119 @@ public struct PlaceDetailView: View {
         }
     }
     
+    private func openDirections() {
+        let lat = place.latitude
+        let lon = place.longitude
+        if let url = URL(string: "http://maps.apple.com/?daddr=\(lat),\(lon)&dirflg=d") {
+            openURL(url)
+        }
+    }
+    
+    private func attachPhoto(_ item: PhotosPickerItem) {
+        Task {
+            if let data = try? await item.loadTransferable(type: Data.self),
+               let savedFileName = LocalMediaStorage.shared.saveImageData(data) {
+                await MainActor.run {
+                    place.addImageFileName(savedFileName)
+                    try? modelContext.save()
+                    selectedPhotoItem = nil
+                }
+            }
+        }
+    }
+    
     private func deletePlace() {
         modelContext.delete(place)
         try? modelContext.save()
         dismiss()
     }
+}
+
+// Helper structs for PlaceDetailView
+struct PreviewImageItem: Identifiable {
+    let id = UUID()
+    let fileName: String
+}
+
+struct ImagePreviewModal: View {
+    @Environment(\.dismiss) private var dismiss
+    let fileName: String
+    
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                if let img = LocalMediaStorage.shared.loadImage(fileName: fileName) {
+                    Image(uiImage: img)
+                        .resizable()
+                        .scaledToFit()
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                        .foregroundStyle(.white)
+                }
+            }
+        }
+    }
+}
+
+struct AddSourceReferenceSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    let place: Place
+    
+    @State private var url = ""
+    @State private var platform = "Instagram"
+    @State private var note = ""
+    
+    let platforms = ["Instagram", "TikTok", "YouTube", "X (Twitter)", "Apple Maps", "Google Maps", "Safari Web", "Blog Post"]
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Source Details") {
+                    Picker("Platform", selection: $platform) {
+                        ForEach(platforms, id: \.self) { p in
+                            Text(p).tag(p)
+                        }
+                    }
+                    TextField("https://...", text: $url)
+                        .keyboardType(.URL)
+                        .autocapitalization(.none)
+                }
+                Section("Description / Title") {
+                    TextField("e.g. Travel reel by @explorer", text: $note)
+                }
+            }
+            .navigationTitle("Attach Source Link")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        let trimmedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !trimmedURL.isEmpty {
+                            let ref = SourceReference(url: trimmedURL, platformName: platform, title: note)
+                            place.addSourceReference(ref)
+                            try? modelContext.save()
+                        }
+                        dismiss()
+                    }
+                    .disabled(url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
+    }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

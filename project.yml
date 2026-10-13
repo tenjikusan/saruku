@@ -42,6 +42,9 @@ targets:
       - framework: PhotosUI.framework
       - framework: UniformTypeIdentifiers.framework
       - framework: CoreLocation.framework
+      - framework: AppIntents.framework
+      - framework: WidgetKit.framework
+      - framework: ImageIO.framework
 
   WaypointsShare:
     type: app-extension

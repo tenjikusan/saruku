@@ -3,6 +3,7 @@ import SwiftUI
 public struct SettingsView: View {
     @AppStorage("locationiq_api_key") private var locationIQKey: String = ""
     @AppStorage("offline_geocoding_enabled") private var offlineGeocodingEnabled: Bool = true
+    @AppStorage("waypoints_cloudkit_enabled") private var cloudKitEnabled: Bool = false
     
     @State private var showingCacheClearedAlert = false
     
@@ -11,7 +12,34 @@ public struct SettingsView: View {
     public var body: some View {
         NavigationStack {
             List {
-                // Section 1: Geocoding & Intelligence
+                // Section 1: Intelligent Organization & Tools
+                Section("Organization & Travel Tools") {
+                    NavigationLink {
+                        DuplicateReviewView()
+                    } label: {
+                        Label("Review Duplicate Waypoints", systemName: "arrow.triangle.merge")
+                    }
+                    
+                    NavigationLink {
+                        DiscoveryCleanupView()
+                    } label: {
+                        Label("Cleanup Discovery Inbox", systemName: "sparkles")
+                    }
+                    
+                    NavigationLink {
+                        JournalListView()
+                    } label: {
+                        Label("Travel Journal & Passport", systemName: "book.pages")
+                    }
+                    
+                    NavigationLink {
+                        NearbyPlacesView()
+                    } label: {
+                        Label("Near Me (Saved Destinations)", systemName: "location.circle")
+                    }
+                }
+                
+                // Section 2: Geocoding & Intelligence
                 Section("Location Intelligence") {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
@@ -60,7 +88,7 @@ public struct SettingsView: View {
                     }
                 }
                 
-                // Section 2: On-Device Apple Intelligence
+                // Section 3: Apple Native Frameworks
                 Section("Apple Native Frameworks") {
                     HStack {
                         Label("Apple Vision OCR", systemName: "text.viewfinder")
@@ -87,7 +115,16 @@ public struct SettingsView: View {
                     }
                 }
                 
-                // Section 3: Data & Backup
+                // Section 4: iCloud Synchronization
+                Section("Cloud Synchronization") {
+                    Toggle("iCloud Sync (Preview)", isOn: $cloudKitEnabled)
+                    
+                    Text(CloudKitSyncService.shared.syncStatus.displayLabel)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                // Section 5: Data & Backup
                 Section("Data Management") {
                     NavigationLink {
                         BackupRestoreView()
@@ -96,7 +133,7 @@ public struct SettingsView: View {
                     }
                 }
                 
-                // Section 4: Legal & Attribution
+                // Section 6: Legal & Attribution
                 Section("Open Data & Attribution") {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("OpenStreetMap Data")
@@ -119,7 +156,7 @@ public struct SettingsView: View {
                     .padding(.vertical, 4)
                 }
                 
-                // Section 5: App Version
+                // Section 7: App Info
                 Section("About Waypoints") {
                     HStack {
                         Text("Version")

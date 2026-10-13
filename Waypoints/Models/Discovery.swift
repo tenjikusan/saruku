@@ -56,6 +56,7 @@ public final class Discovery {
     public var evidenceJSON: String?
     public var confirmedPlaceId: String?
     public var imageFilePath: String?
+    public var imageFileNamesJSON: String?
     public var createdAt: Date
     public var updatedAt: Date
     
@@ -152,6 +153,28 @@ public final class Discovery {
             } else {
                 evidenceJSON = nil
             }
+        }
+    }
+    
+    public var imageFileNames: [String] {
+        get {
+            if let json = imageFileNamesJSON, let data = json.data(using: .utf8),
+               let items = try? JSONDecoder().decode([String].self, from: data) {
+                return items
+            }
+            if let single = imageFilePath, !single.isEmpty {
+                return [single]
+            }
+            return []
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue),
+               let str = String(data: data, encoding: .utf8) {
+                imageFileNamesJSON = str
+            } else {
+                imageFileNamesJSON = nil
+            }
+            imageFilePath = newValue.first
         }
     }
 }

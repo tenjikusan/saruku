@@ -9,7 +9,10 @@ public struct EditPlaceSheet: View {
     @Bindable var place: Place
     
     @State private var name: String
+    @State private var city: String
+    @State private var region: String
     @State private var country: String
+    @State private var category: String
     @State private var latitudeString: String
     @State private var longitudeString: String
     @State private var note: String
@@ -18,10 +21,15 @@ public struct EditPlaceSheet: View {
     @State private var selectedCollectionIds: Set<String>
     @State private var errorMessage: String?
     
+    let categories = ["Destination", "Beaches", "Mountains", "Food & Dining", "Historic Sites", "Temples & Shrines", "Museums", "Nature", "Scenic Viewpoint", "Hotel & Stay"]
+    
     public init(place: Place) {
         self.place = place
         _name = State(initialValue: place.name)
+        _city = State(initialValue: place.city)
+        _region = State(initialValue: place.region)
         _country = State(initialValue: place.country)
+        _category = State(initialValue: place.category)
         _latitudeString = State(initialValue: String(format: "%.6f", place.latitude))
         _longitudeString = State(initialValue: String(format: "%.6f", place.longitude))
         _note = State(initialValue: place.note)
@@ -35,7 +43,15 @@ public struct EditPlaceSheet: View {
             Form {
                 Section("Basic Information") {
                     TextField("Place name", text: $name)
-                    TextField("Country / Region", text: $country)
+                    TextField("City / Locality", text: $city)
+                    TextField("Region / State / Prefecture", text: $region)
+                    TextField("Country", text: $country)
+                    
+                    Picker("Category", selection: $category) {
+                        ForEach(categories, id: \.self) { cat in
+                            Text(cat).tag(cat)
+                        }
+                    }
                 }
                 
                 Section("Coordinates") {
@@ -138,7 +154,10 @@ public struct EditPlaceSheet: View {
         }
         
         place.name = trimmedName
+        place.city = city.trimmingCharacters(in: .whitespacesAndNewlines)
+        place.region = region.trimmingCharacters(in: .whitespacesAndNewlines)
         place.country = country.trimmingCharacters(in: .whitespacesAndNewlines)
+        place.category = category
         place.latitude = lat
         place.longitude = lon
         place.note = note.trimmingCharacters(in: .whitespacesAndNewlines)

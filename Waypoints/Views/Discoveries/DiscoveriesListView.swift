@@ -111,8 +111,8 @@ public struct DiscoveriesListView: View {
                 )
             }
             .sheet(isPresented: $isShowingAddSheet) {
-                AddDiscoverySheet { url, caption, collection, imageData in
-                    saveNewDiscovery(url: url, caption: caption, collection: collection, imageData: imageData)
+                AddDiscoverySheet { url, caption, collection, imageFileNames in
+                    saveNewDiscovery(url: url, caption: caption, collection: collection, imageFileNames: imageFileNames)
                 }
             }
         }
@@ -165,12 +165,13 @@ public struct DiscoveriesListView: View {
         }
     }
     
-    private func saveNewDiscovery(url: String, caption: String, collection: String, imageData: Data?) {
+    private func saveNewDiscovery(url: String, caption: String, collection: String, imageFileNames: [String]) {
         let disc = Discovery(
             originalURL: url,
             caption: caption,
             collectionName: collection
         )
+        disc.imageFileNames = imageFileNames
         modelContext.insert(disc)
         try? modelContext.save()
         

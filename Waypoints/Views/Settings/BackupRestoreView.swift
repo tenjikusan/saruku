@@ -7,6 +7,8 @@ public struct BackupRestoreView: View {
     @Query private var places: [Place]
     @Query private var discoveries: [Discovery]
     @Query private var collections: [CollectionModel]
+    @Query private var trips: [Trip]
+    @Query private var journalEntries: [JournalEntry]
     
     @State private var importMode: LegacyBackupImporter.ImportMode = .merge
     @State private var showingFileImporter = false
@@ -116,7 +118,9 @@ public struct BackupRestoreView: View {
             let json = try NativeBackupService.exportBackup(
                 places: places,
                 discoveries: discoveries,
-                collections: collections
+                collections: collections,
+                trips: trips,
+                journalEntries: journalEntries
             )
             self.exportedDataString = json
             self.showingExportShareSheet = true
