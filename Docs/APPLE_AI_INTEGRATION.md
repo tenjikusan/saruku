@@ -1,6 +1,6 @@
 # Apple Native Intelligence Integration
 
-Waypoints utilizes Apple's native machine learning frameworks on iOS. This architecture guarantees total user privacy, offline functionality, and instant processing speeds without monthly AI API subscriptions.
+Waypoints utilizes Apple's native machine learning frameworks on iOS. This architecture keeps processing on-device for user privacy and offline functionality.
 
 ---
 
@@ -27,19 +27,15 @@ Waypoints utilizes Apple's native machine learning frameworks on iOS. This archi
 - **Execution Target**: On-device NaturalLanguage statistical and transformer models.
 
 ### Use Cases:
-1. **Caption Parsing**: User captions such as:
-   > *"Finally made it to the magical Lake Como in Lombardy after a gorgeous drive through Switzerland!"*
-   are parsed into tokens:
-   - `Lake Como` -> Place Name (Confidence: High)
-   - `Lombardy` -> Place Name (Confidence: High)
-   - `Switzerland` -> Place Name (Confidence: High)
+1. **Caption Parsing**: User captions are parsed into tokens to identify place and organization names.
 2. **Noise Filtering**: Distinguishes generic words ("travel", "vacation", "morning") from bona fide geographical entities.
 
 ---
 
-## 3. Foundation Models Service (Apple Intelligence Readiness)
+## 3. Foundation Models Integration (Unimplemented Optional Integration)
 
 ### Implementation: `FoundationModelsService.swift`
-- **Runtime Capability Detection**: Queries system availability for Apple Intelligence foundation model capabilities on iOS 18+ and compatible hardware (A17 Pro, M1+).
-- **Graceful Fallback**: If Apple Foundation Models are not active on the device, the app falls back seamlessly to `VisionOCRService` and `NaturalLanguageService` without any degradation in core functionality.
-- **Zero Third-Party Data Transmission**: Never sends sensitive user photos or personal notes to third-party cloud LLM endpoints unless explicitly configured by the user.
+- **Current Status**: **Unimplemented placeholder / stub**.
+- **Coexistence with Deployment Target**: The iOS 17.0 base deployment target can coexist with iOS 18+ system foundation model APIs via `#available(iOS 18.0, *)` and optional framework linking.
+- **Current Behavior**: `isAvailableOnCurrentDevice` returns `false`, and `understandComplexDescription` transparently falls back to `NaturalLanguageService`.
+- **Privacy Boundary**: No remote LLM services or paid third-party AI APIs are invoked.

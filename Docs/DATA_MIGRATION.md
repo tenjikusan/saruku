@@ -65,10 +65,21 @@ Users can select between two modes in `BackupRestoreView`:
 
 ---
 
-## 5. Native Format (`waypoints.native.v1`)
+## 5. Native Format (`waypoints.native.v2`)
 
 The native format exported by `NativeBackupService.swift` includes:
-- Schema version: `waypoints.native.v1`
+- Schema version: `waypoints.native.v2`
 - Full `Place` models including `CoordinateProvenance` and linked collection references.
 - Full `Discovery` models with serialized candidate lists and evidence records.
 - Complete `CollectionModel` entities with custom SF Symbols and hex color codes.
+- Multi-day `Trip` entities with `ItineraryDay` and `ItineraryStop` records.
+- `JournalEntry` records with visit dates and star ratings.
+- Portable base64 media attachment dictionary.
+
+---
+
+## 6. Verification Status
+
+> [!NOTE]
+> Backward-compatibility parsing of legacy Expo `vaypoints.backup.v1` records has been verified via unit tests in `LegacyBackupImportTests.swift`.
+> However, **bidirectional cross-platform backup compatibility** (importing native v2 backups back into the Expo app, and roundtrip data preservation) remains **untested in both directions** and will be verified after the first stable iOS build.

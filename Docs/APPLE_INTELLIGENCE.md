@@ -1,6 +1,6 @@
 # Waypoints iOS — Apple Native Intelligence Architecture
 
-Waypoints uses Apple's native machine learning and computer vision frameworks directly on iPhone hardware. This ensures zero cloud server costs, instant latency, and complete user privacy.
+Waypoints uses Apple's native machine learning and computer vision frameworks directly on iPhone hardware.
 
 ---
 
@@ -35,7 +35,7 @@ Waypoints uses Apple's native machine learning and computer vision frameworks di
 - **Target**: `kCGImagePropertyGPSDictionary` reading `kCGImagePropertyGPSLatitude`, `kCGImagePropertyGPSLongitude`, and orientation refs.
 - **Privacy & Transparency**:
   - Extracted coordinates are explicitly labeled with source `"Photo EXIF Metadata"` and attribution `"Photograph Metadata"`.
-  - Strictly distinguishes camera hardware GPS from AI entity recognition.
+  - Strictly distinguishes camera hardware GPS from textual entity recognition.
 
 ---
 
@@ -55,7 +55,8 @@ Waypoints uses Apple's native machine learning and computer vision frameworks di
 
 ---
 
-## 5. Foundation Models Readiness (`FoundationModelsService.swift`)
+## 5. Foundation Models Integration (`FoundationModelsService.swift`)
 
-- Runtime capability detection for Apple Intelligence on iOS 18+ and compatible hardware (A17 Pro / M-series).
-- Provides graceful fallback to `VisionOCRService` and `NaturalLanguageService` on older devices.
+- **Status**: **Unimplemented optional integration**.
+- **Design**: Configured to coexist with iOS 17.0 base deployment target via runtime `#available(iOS 18.0, *)` availability gates.
+- **Current Behavior**: Always returns unavailable (`false`) and delegates to `NaturalLanguageService` for entity recognition.
