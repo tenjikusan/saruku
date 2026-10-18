@@ -103,3 +103,19 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.waypoints.atlas.UITests
         GENERATE_INFOPLIST_KEY_CFBundlePackageType: BNDL
+
+schemes:
+  Waypoints:
+    build:
+      targets:
+        Waypoints: all
+        WaypointsShare: all
+        WaypointsWidget: all
+        WaypointsTests: [test]
+    test:
+      targets:
+        - WaypointsTests
+    run:
+      config: Debug
+    archive:
+      config: Release

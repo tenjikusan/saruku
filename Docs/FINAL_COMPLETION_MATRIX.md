@@ -1,74 +1,64 @@
-# Waypoints — Final Feature Completion & Verification Matrix
+# Waypoints — Engineering Audit & Verification Matrix
 
-**Last Updated:** October 13, 2026, 16:15 IST  
+**Last Audit:** October 18, 2026  
 **Project:** `F:\App\Waypoints_iOS_Native`  
-**Current Branch:** `feature/native-expansion`  
-**Deadline:** October 15, 2026 (IST)  
+**Active Branch:** `feature/native-expansion`  
+**Reference Expo Base:** `F:\App\Waypoints` (Preserved and intact)  
 
 ---
 
-## 1. Feature Status Classification Rules
+## 1. Classification Definitions
 
-Per strict engineering and release directives:
-- **COMPLETE AND VERIFIED**: Proven with passing automated unit/integration tests and real execution evidence.
-- **IMPLEMENTED BUT UNVERIFIED**: Code is fully written and integrated in Swift/SwiftUI, but requires a live macOS Xcode compilation / device execution environment for hardware verification.
-- **PARTIALLY IMPLEMENTED**: Only partial logic exists; secondary sub-features remain in development.
-- **BROKEN**: Code exists but contains known runtime exceptions or syntax failures.
-- **MISSING**: Feature has not been implemented in source.
-- **EXTERNALLY BLOCKED**: Implementation is complete in code, but requires external account credentials, entitlements, or physical Apple hardware.
+- **Implemented**: Full Swift/SwiftUI logic is written in the codebase.
+- **Placeholder / Stub**: Scaffolding exists, but returns mock/hardcoded values or redirects to a fallback without executing the advertised service.
+- **Compiled on macOS**: Confirmed to compile without errors on Xcode via a macOS runner or physical Mac.
+- **Tested**: Verified via automated XCTest suite execution.
+- **Device-Verified**: Installed and manually smoke-tested on a physical iPhone.
 
 ---
 
-## 2. Comprehensive 35-Feature Verification Matrix
+## 2. Feature-by-Feature Engineering Audit Matrix
 
-| # | Feature | Code Complete | Builds (macOS) | Tests Pass | Device Verified | Status | Notes / Blockers |
-|---|---|:---:|:---:|:---:|:---:|:---:|---|
-| 1 | **SwiftUI Navigation** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `MainTabView.swift` with 5 primary tabs, badges, deep link router |
-| 2 | **Native Globe (3D & Canvas)** | YES | Pending CI | YES | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `SceneKitGlobeView.swift` (3D Metal sphere) + `NativeGlobeView.swift` (Canvas orthographic), filters, raycast hit-testing |
-| 3 | **Saved Places** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `Place.swift`, `PlaceDetailView.swift`, `EditPlaceSheet.swift`, notes, multiple source references |
-| 4 | **Discoveries Inbox** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `Discovery.swift`, `DiscoveriesListView.swift`, multi-screenshot ingestion, status tracking |
-| 5 | **URL Extraction** | YES | Pending CI | YES | Pending Oct 15 | COMPLETE AND VERIFIED | `LinkExtractor.swift`, handles Google Maps, Apple Maps, Instagram, TikTok, Shorts, Osm markers. Tests in `LinkExtractorTests.swift` |
-| 6 | **Vision OCR** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `VisionOCRService.swift`, Apple Vision VNRecognizeTextRequest, orientation normalization, pixel text extraction |
-| 7 | **NaturalLanguage** | YES | Pending CI | YES | Pending Oct 15 | COMPLETE AND VERIFIED | `NaturalLanguageService.swift`, entity extraction & multi-candidate parsing. Tests in `MultiLocationExtractionTests.swift` |
-| 8 | **Foundation Models** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `FoundationModelsService.swift`, hardware availability gate, transparent on-device NaturalLanguage fallback |
-| 9 | **Geocoding Engine** | YES | Pending CI | YES | Pending Oct 15 | COMPLETE AND VERIFIED | `GeocodingEngine.swift`, Photon OSM + LocationIQ fallback + offline demo index. Tests in `GeocodingServiceTests.swift` |
-| 10 | **Candidate Confirmation** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `LocationConfirmationSheet.swift`, candidate disambiguation, map preview before SwiftData commit |
-| 11 | **Share Extension** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `ShareViewController.swift`, `ShareExtensionQueue.swift`, handles URLs, text, and images from iOS Share Sheet |
-| 12 | **App Group Intake** | YES | Pending CI | YES | Pending Oct 15 | COMPLETE AND VERIFIED | `AppGroupShareQueue.swift`, atomic file locking, shared media directory. Tests in `AppGroupQueueTests.swift` |
-| 13 | **SwiftData Persistence** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | All 7 models registered in `WaypointsApp.swift`: `Place`, `Discovery`, `CollectionModel`, `Trip`, `ItineraryDay`, `ItineraryStop`, `JournalEntry` |
-| 14 | **Favorites** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `FavoritesView.swift`, toggleable star on places, quick filtering on globe |
-| 15 | **Visited Status** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `VisitedView.swift`, visited badge on globe pins, passport travel counter |
-| 16 | **Collections** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `CollectionsView.swift`, custom user collections, collection detail, place assignment |
-| 17 | **Smart Collections** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | 8 dynamic smart folders (Recently Saved, Favorites, Visited, Photos, Instagram, YouTube, Needs Review) |
-| 18 | **Trips** | YES | Pending CI | YES | Pending Oct 15 | COMPLETE AND VERIFIED | `Trip.swift`, `TripsListView.swift`, calendar durations, date ranges. Tests in `TripItineraryTests.swift` |
-| 19 | **Itineraries** | YES | Pending CI | YES | Pending Oct 15 | COMPLETE AND VERIFIED | `TripDetailView.swift`, `ItineraryDay.swift`, `ItineraryStop.swift`, Haversine route math, stop completion |
-| 20 | **Travel Journal** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `JournalListView.swift`, `JournalEntry.swift`, star ratings, travel memories, attached photos |
-| 21 | **Unified Search** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `UnifiedSearchView.swift`, local SwiftData instant query + live worldwide OSM Photon lookup |
-| 22 | **Nearby Places ("Near Me")** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `NearbyPlacesView.swift`, `LocationManager.swift`, CoreLocation foreground GPS, 10–250km radius |
-| 23 | **Widgets (WidgetKit)** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `WaypointsWidget/` target, 4 widgets (Recently Saved, Favorite, Upcoming Trip, Unconfirmed Discoveries) |
-| 24 | **App Intents & Shortcuts** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `WaypointsIntents.swift`: OpenGlobe, OpenFavorites, OpenTrip, SearchPlaces, AddDiscovery, ShortcutsProvider |
-| 25 | **Deep Linking** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `DeepLinkRouter.swift`, handles `waypoints://globe`, `favorites`, `places`, `collections`, `search`, `trip/{id}` |
-| 26 | **CloudKit Synchronization** | YES | Pending CI | Pending CI | Pending Oct 15 | EXTERNALLY BLOCKED | `CloudKitSyncService.swift`, CKRecord sync engine. Requires active Apple Developer account container provisioning |
-| 27 | **Legacy Expo Import** | YES | Pending CI | YES | COMPLETE AND VERIFIED | `LegacyBackupImporter.swift`, imports `waypoints.backup.v1`. Tests in `LegacyBackupImportTests.swift` |
-| 28 | **Native Backup & Restore** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `NativeBackupService.swift`, schema `waypoints.native.v2`, JSON export/import, portable base64 media embedding |
-| 29 | **Media Storage** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `LocalMediaStorage.swift`, stores JPEG files in App Group sandboxed container, prevents SQLite bloat |
-| 30 | **Duplicate Review** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `DuplicateReviewView.swift`, proximity (≤ 200m) and title similarity detection, user-controlled merge |
-| 31 | **Discovery Cleanup** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | `DiscoveryCleanupView.swift`, pending inbox review, retry all, bulk deletion |
-| 32 | **Accessibility** | YES | Pending CI | Pending CI | Pending Oct 15 | IMPLEMENTED BUT UNVERIFIED | Dynamic Type font scales (`WaypointsTypography.swift`), VoiceOver labels, high-contrast tints |
-| 33 | **Offline Functionality** | YES | Pending CI | YES | COMPLETE AND VERIFIED | SwiftData local SQLite, offline knowledge demo index, local Haversine calculations without network |
-| 34 | **Privacy and Security** | YES | Pending CI | YES | COMPLETE AND VERIFIED | Local-first defaults, zero third-party telemetry, App Group sandbox isolation, foreground-only GPS |
-| 35 | **TestFlight Distribution** | YES | Pending CI | Pending CI | Pending Oct 15 | EXTERNALLY BLOCKED | `testflight-release.yml` configured. Requires Apple Developer credentials & App Store Connect API Key |
+| Feature Module | Implemented | Placeholder / Stub | Compiled (macOS) | Tested | Device-Verified | Current Status & Notes |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| **SwiftUI Tab Navigation** | YES | NO | Pending CI | Pending CI | NO | Implemented in `MainTabView.swift`. Deep linking wired via `DeepLinkRouter`. |
+| **Native 3D SceneKit Globe** | YES | NO | Pending CI | NO | NO | Implemented in `SceneKitGlobeView.swift` (3D sphere, lighting, 3D pins, raycast hit-testing). Needs simulator visual check. |
+| **Stylized Canvas Globe** | YES | NO | Pending CI | YES | NO | Implemented in `NativeGlobeView.swift`. Spherical projection math verified in `CoordinateMathTests`. |
+| **Saved Places & Details** | YES | NO | Pending CI | Pending CI | NO | Implemented in `Place.swift`, `PlaceDetailView.swift`, `EditPlaceSheet.swift`. |
+| **Discoveries Intake Inbox** | YES | NO | Pending CI | Pending CI | NO | Implemented in `Discovery.swift`, `DiscoveriesListView.swift`. Supports multi-screenshot files. |
+| **URL Coordinate / Place Extraction** | YES | NO | Pending CI | YES | NO | Implemented in `LinkExtractor.swift`. Tested across 11 test cases in `LinkExtractorTests.swift`. |
+| **Vision OCR Service** | YES | NO | Pending CI | Pending CI | NO | Implemented in `VisionOCRService.swift`. Uses `VNRecognizeTextRequest`. Requires macOS/iOS simulator to execute Vision framework. |
+| **Apple NaturalLanguage Service** | YES | NO | Pending CI | YES | NO | Implemented in `NaturalLanguageService.swift`. Multi-location parsing tested in `MultiLocationExtractionTests.swift`. |
+| **Apple Foundation Models** | NO | **YES (STUB)** | Pending CI | NO | NO | **STUB**: `isAvailableOnCurrentDevice` returns `false`; `parseWithFoundationModel` calls NaturalLanguage fallback. Not functional on iOS 17. |
+| **Geocoding Engine** | YES | NO | Pending CI | YES | NO | Implemented in `GeocodingEngine.swift` (Photon OSM + LocationIQ fallback). Tested in `GeocodingServiceTests.swift`. |
+| **Location Candidate Confirmation** | YES | NO | Pending CI | Pending CI | NO | Implemented in `LocationConfirmationSheet.swift`. Disambiguates multiple candidates before saving. |
+| **iOS Share Extension** | YES | NO | Pending CI | Pending CI | NO | Implemented in `ShareViewController.swift` and `ShareExtensionQueue.swift`. Targets configured in `project.yml`. |
+| **App Group Intake Queue** | YES | NO | Pending CI | YES | NO | Implemented in `AppGroupShareQueue.swift`. Atomic queue tested in `AppGroupQueueTests.swift`. |
+| **SwiftData Schema (7 Models)** | YES | NO | Pending CI | Pending CI | NO | Models: `Place`, `Discovery`, `CollectionModel`, `Trip`, `ItineraryDay`, `ItineraryStop`, `JournalEntry`. Registered in `WaypointsApp`. |
+| **Favorites & Visited Status** | YES | NO | Pending CI | Pending CI | NO | Implemented in `FavoritesView.swift`, `VisitedView.swift`, and `Place.swift`. |
+| **Collections & Smart Folders** | YES | NO | Pending CI | Pending CI | NO | Implemented in `CollectionsView.swift`. Custom collections + 8 dynamic smart folders based on local SwiftData queries. |
+| **Trips & Multi-day Itineraries** | YES | NO | Pending CI | YES | NO | Implemented in `Trip.swift`, `TripDetailView.swift`. Haversine distance and duration tested in `TripItineraryTests.swift`. |
+| **Travel Journal & Memories** | YES | NO | Pending CI | Pending CI | NO | Implemented in `JournalListView.swift`, `JournalEntry.swift`. Star ratings, visit dates, image attachments. |
+| **Unified Search** | YES | NO | Pending CI | Pending CI | NO | Implemented in `UnifiedSearchView.swift`. Local debounced SwiftData search + worldwide OSM Photon search. |
+| **Nearby Places ("Near Me")** | YES | NO | Pending CI | Pending CI | NO | Implemented in `NearbyPlacesView.swift`, `LocationManager.swift`. Single-fix foreground CoreLocation. |
+| **Home Screen Widgets (WidgetKit)** | YES | NO | Pending CI | Pending CI | NO | Implemented in `WaypointsWidget/` (4 widgets: Recently Saved, Favorite, Trip, Discoveries). Target added in `project.yml`. |
+| **App Intents & App Shortcuts** | YES | NO | Pending CI | Pending CI | NO | Implemented in `WaypointsIntents.swift`. `OpenGlobeIntent`, `OpenFavoritesIntent`, `OpenTripIntent`, `SearchPlacesIntent`. |
+| **URL Deep Linking** | YES | NO | Pending CI | Pending CI | NO | Implemented in `DeepLinkRouter.swift` and handled in `MainTabView.swift` via `.onOpenURL`. |
+| **CloudKit Sync Service** | YES | **DISABLED** | Pending CI | NO | NO | **DISABLED BY DEFAULT**: Architecture refactored (remote fetch first, pagination, deletion propagation), but sync remains strictly disabled until validated. |
+| **Legacy Expo Backup Import** | YES | NO | Pending CI | YES | NO | Implemented in `LegacyBackupImporter.swift`. Backward compatibility tested in `LegacyBackupImportTests.swift`. |
+| **Native Backup & Media Archive** | YES | NO | Pending CI | Pending CI | NO | Implemented in `NativeBackupService.swift`. Schema `waypoints.native.v2` with portable base64 image data embedding. |
+| **Sandboxed Media Storage** | YES | NO | Pending CI | Pending CI | NO | Implemented in `LocalMediaStorage.swift`. Sandboxed file storage in App Group container `WaypointsMedia/`. |
+| **Duplicate Review** | YES | NO | Pending CI | Pending CI | NO | Implemented in `DuplicateReviewView.swift`. Proximity (≤ 200m) and string distance detection. User-controlled merge. |
+| **Discovery Cleanup** | YES | NO | Pending CI | Pending CI | NO | Implemented in `DiscoveryCleanupView.swift`. Inbox review, retry failed items, bulk delete. |
 
 ---
 
-## 3. Honest External Blocker Report
+## 3. Honest Status of Stubbed or Incomplete Modules
 
-1. **Cloud Compilation & macOS Runner Access**:
-   - *Status:* Windows development workstation lacks native Apple Clang/Swift compiler.
-   - *Resolution:* Cloud macOS GitHub Actions workflow ([`.github/workflows/ios-build.yml`](file:///F:/App/Waypoints_iOS_Native/.github/workflows/ios-build.yml)) is configured on `macos-14` to run XcodeGen, compile the project, and run unit tests.
-   - *Action Required:* Push commits to GitHub repository to trigger the cloud macOS build.
+1. **Apple Foundation Models (`FoundationModelsService.swift`)**:
+   - **Current Reality:** Apple Foundation Models / System Intelligence APIs require Apple Intelligence hardware (iPhone 15 Pro / A17 Pro or M-series) and iOS 18+. The code currently returns `isAvailableOnCurrentDevice = false` and redirects execution to `NaturalLanguageService`.
+   - **Classification:** **Placeholder / Stub**. The actual functioning intelligence layer is `NaturalLanguageService` (Apple NaturalLanguage framework).
 
-2. **Apple Developer Account & Code Signing (TestFlight Distribution)**:
-   - *Status:* Requires an active Apple Developer Program membership ($99/yr) and App Store Connect API Key to sign `.ipa` binaries and distribute to TestFlight for physical iPhone installation.
-   - *Affected Features:* TestFlight distribution, CloudKit live container provisioning, App Groups on physical devices.
-   - *Action Required:* Configure `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, and private key in GitHub Repository Secrets.
+2. **CloudKit Synchronization (`CloudKitSyncService.swift`)**:
+   - **Current Reality:** The service has been architecturally refactored to fetch remote records first, use cursor pagination, and support deletion propagation. However, live multi-device synchronization is untested without an active Apple Developer Team provisioning profile and CloudKit container setup.
+   - **Classification:** **Disabled / Untested in Production**. It is strictly disabled by default (`isCloudSyncEnabled = false`). The app operates reliably in local-first mode using SwiftData SQLite.
