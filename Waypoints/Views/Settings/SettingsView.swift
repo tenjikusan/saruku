@@ -84,7 +84,7 @@ public struct SettingsView: View {
                     } label: {
                         Text("Clear Geocoding Cache")
                             .font(.subheadline)
-                            .foregroundStyle(WaypointsColors.deepForest)
+                            .foregroundStyle(WaypointsColors.brandPrimary)
                     }
                 }
                 

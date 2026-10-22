@@ -28,7 +28,7 @@ public struct TripsListView: View {
                     .padding(16)
                 }
             }
-            .background(WaypointsColors.sandLight.ignoresSafeArea())
+            .background(WaypointsColors.background.ignoresSafeArea())
             .navigationTitle("Trips & Itineraries")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -37,6 +37,7 @@ public struct TripsListView: View {
                     } label: {
                         Image(systemName: "plus")
                             .fontWeight(.semibold)
+                            .foregroundStyle(WaypointsColors.brandPrimary)
                     }
                 }
             }
@@ -52,12 +53,12 @@ public struct TripsListView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(trip.name)
                         .font(WaypointsTypography.display(20))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.textPrimary)
                     
                     if !trip.destination.isEmpty {
                         Text(trip.destination)
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(WaypointsColors.textSecondary)
                     }
                 }
                 
@@ -78,20 +79,21 @@ public struct TripsListView: View {
             HStack {
                 Label("\(trip.startDate.formatted(date: .abbreviated, time: .omitted)) – \(trip.endDate.formatted(date: .abbreviated, time: .omitted))", systemName: "calendar")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
                 
                 Spacer()
                 
                 Text("\(trip.durationInDays) Days • \(trip.days.count) Days Planned")
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.brandPrimary)
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     private var emptyState: some View {
@@ -99,15 +101,15 @@ public struct TripsListView: View {
             Spacer().frame(height: 80)
             Image(systemName: "airplane.circle")
                 .font(.system(size: 54))
-                .foregroundStyle(WaypointsColors.deepForest.opacity(0.3))
+                .foregroundStyle(WaypointsColors.brandPrimary.opacity(0.3))
             
             Text("No Trips Planned Yet")
                 .font(WaypointsTypography.title(18))
-                .foregroundStyle(WaypointsColors.deepForest)
+                .foregroundStyle(WaypointsColors.textPrimary)
             
             Text("Create multi-day trip itineraries, organize daily stops, and visualize your journeys on the globe.")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(WaypointsColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
@@ -119,7 +121,7 @@ public struct TripsListView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(WaypointsColors.deepForest)
+                    .background(WaypointsColors.brandPrimary)
                     .clipShape(Capsule())
             }
         }

@@ -55,7 +55,7 @@ public struct CollectionsView: View {
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(WaypointsColors.sandLight)
+                .background(WaypointsColors.background)
                 
                 // Tab Content
                 switch selectedTab {
@@ -69,7 +69,7 @@ public struct CollectionsView: View {
                     TripsListView()
                 }
             }
-            .background(WaypointsColors.sandLight.ignoresSafeArea())
+            .background(WaypointsColors.background.ignoresSafeArea())
             .navigationTitle("Collections & Trips")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -134,17 +134,18 @@ public struct CollectionsView: View {
                                         
                                         Text(item.name)
                                             .font(.system(size: 13, weight: .bold))
-                                            .foregroundStyle(WaypointsColors.deepForest)
+                                            .foregroundStyle(WaypointsColors.textPrimary)
                                         
                                         Text(item.subtitle)
                                             .font(.system(size: 11))
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(WaypointsColors.textSecondary)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(14)
-                                    .background(Color.white)
+                                    .background(WaypointsColors.surface)
                                     .clipShape(RoundedRectangle(cornerRadius: 14))
-                                    .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 1)
+                                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(WaypointsColors.border, lineWidth: 1))
+                                    .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 1)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -310,9 +311,10 @@ public struct CollectionsView: View {
             .buttonStyle(.plain)
         }
         .padding(14)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     // MARK: - Custom Collections
@@ -419,14 +421,15 @@ public struct CollectionsView: View {
                 .font(.system(size: 14, weight: .bold))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(WaypointsColors.mintMist)
-                .foregroundStyle(WaypointsColors.deepForest)
+                .background(WaypointsColors.brandPrimary.opacity(0.1))
+                .foregroundStyle(WaypointsColors.brandPrimary)
                 .clipShape(Capsule())
         }
         .padding(14)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     private func collectionCard(_ collection: CollectionModel) -> some View {
@@ -443,19 +446,20 @@ public struct CollectionsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(collection.name)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.textPrimary)
                     .lineLimit(1)
                 
                 Text("\(collection.places.count) place\(collection.places.count == 1 ? "" : "s")")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     private func collectionListRow(_ collection: CollectionModel) -> some View {
@@ -472,23 +476,24 @@ public struct CollectionsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(collection.name)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.textPrimary)
                 
                 Text("\(collection.places.count) saved waypoint\(collection.places.count == 1 ? "" : "s")")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(WaypointsColors.textSecondary)
         }
         .padding(14)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     private var emptyState: some View {
@@ -622,11 +627,11 @@ public struct AddCollectionSheet: View {
     
     @State private var name: String = ""
     @State private var selectedIcon: String = "folder.fill"
-    @State private var selectedColorHex: String = "#244B3B"
+    @State private var selectedColorHex: String = "#164B43"
     @State private var errorMessage: String? = nil
     
     let icons = ["folder.fill", "star.fill", "heart.fill", "airplane", "tent.fill", "cup.and.saucer.fill", "camera.fill", "figure.walk", "mountain.2.fill", "water.waves"]
-    let colors = ["#244B3B", "#B27C61", "#D97447", "#5B8E7D", "#8C6A58", "#386641", "#6A994E", "#BC4749"]
+    let colors = ["#164B43", "#101F33", "#FF785A", "#267A6E", "#E09F3E", "#386641", "#5B8E7D", "#8C6A58"]
     
     public init() {}
     

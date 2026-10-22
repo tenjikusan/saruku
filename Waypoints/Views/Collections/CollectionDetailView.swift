@@ -32,20 +32,20 @@ public struct CollectionDetailView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(place.name)
                                         .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(WaypointsColors.deepForest)
+                                        .foregroundStyle(WaypointsColors.textPrimary)
                                     if !place.country.isEmpty {
                                         Text(place.country)
                                             .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(WaypointsColors.textSecondary)
                                     }
                                     Text(place.formattedCoordinates)
                                         .font(.system(size: 12, design: .monospaced))
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(WaypointsColors.textSecondary)
                                 }
                                 Spacer()
                                 if place.isFavorite {
                                     Image(systemName: "star.fill")
-                                        .foregroundStyle(WaypointsColors.sunsetAmber)
+                                        .foregroundStyle(Color(hex: "#E09F3E"))
                                         .font(.caption)
                                 }
                             }
@@ -63,7 +63,7 @@ public struct CollectionDetailView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .background(WaypointsColors.sandLight)
+        .background(WaypointsColors.background)
         .navigationTitle(collection.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -82,6 +82,7 @@ public struct CollectionDetailView: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                 }
             }
         }
@@ -112,16 +113,17 @@ public struct CollectionDetailView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(collection.name)
                     .font(WaypointsTypography.display(20))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.textPrimary)
                 Text("\(collection.places.count) saved waypoint\(collection.places.count == 1 ? "" : "s")")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
             }
             
             Spacer()
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
+        .overlay(Rectangle().frame(height: 1).foregroundStyle(WaypointsColors.border), alignment: .bottom)
     }
     
     private var emptyState: some View {

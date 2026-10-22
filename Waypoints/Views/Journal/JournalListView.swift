@@ -45,7 +45,7 @@ public struct JournalListView: View {
                 }
                 .padding(16)
             }
-            .background(WaypointsColors.sandLight.ignoresSafeArea())
+            .background(WaypointsColors.background.ignoresSafeArea())
             .navigationTitle("Travel Journal")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -69,7 +69,7 @@ public struct JournalListView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("PASSPORT STATS")
                 .font(WaypointsTypography.eyebrow)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(WaypointsColors.textSecondary)
             
             HStack(spacing: 12) {
                 statBox(title: "Visited", value: "\(totalVisitedPlaces)", icon: "checkmark.seal.fill")
@@ -84,9 +84,10 @@ public struct JournalListView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     private func statBox(title: String, value: String, icon: String) -> some View {
@@ -94,19 +95,20 @@ public struct JournalListView: View {
             HStack {
                 Image(systemName: icon)
                     .font(.caption)
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.brandPrimary)
                 Text(title)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
             }
             Text(value)
                 .font(WaypointsTypography.display(20))
-                .foregroundStyle(WaypointsColors.deepForest)
+                .foregroundStyle(WaypointsColors.brandPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(WaypointsColors.sandLight.opacity(0.6))
+        .background(WaypointsColors.background)
         .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(WaypointsColors.border, lineWidth: 1))
     }
     
     // MARK: - Journal Entry Card
@@ -117,11 +119,11 @@ public struct JournalListView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(entry.placeName.isEmpty ? entry.title : entry.placeName)
                         .font(WaypointsTypography.display(18))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.textPrimary)
                     
                     Text(entry.visitDate.formatted(date: .long, time: .omitted))
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WaypointsColors.textSecondary)
                 }
                 
                 Spacer()
@@ -131,7 +133,7 @@ public struct JournalListView: View {
                     ForEach(1...5, id: \.self) { star in
                         Image(systemName: star <= entry.rating ? "star.fill" : "star")
                             .font(.caption)
-                            .foregroundStyle(star <= entry.rating ? WaypointsColors.sunsetAmber : .secondary.opacity(0.3))
+                            .foregroundStyle(star <= entry.rating ? Color(hex: "#E09F3E") : WaypointsColors.border)
                     }
                 }
             }
@@ -139,7 +141,7 @@ public struct JournalListView: View {
             if !entry.note.isEmpty {
                 Text(entry.note)
                     .font(.system(size: 14))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.textPrimary)
                     .lineLimit(4)
             }
             
@@ -154,6 +156,7 @@ public struct JournalListView: View {
                                     .scaledToFill()
                                     .frame(width: 70, height: 70)
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(WaypointsColors.border, lineWidth: 1))
                             }
                         }
                     }
@@ -161,9 +164,10 @@ public struct JournalListView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     private var emptyState: some View {
@@ -171,15 +175,15 @@ public struct JournalListView: View {
             Spacer().frame(height: 60)
             Image(systemName: "book.pages")
                 .font(.system(size: 52))
-                .foregroundStyle(WaypointsColors.deepForest.opacity(0.3))
+                .foregroundStyle(WaypointsColors.brandPrimary.opacity(0.3))
             
             Text("No Journal Entries Yet")
                 .font(WaypointsTypography.title(18))
-                .foregroundStyle(WaypointsColors.deepForest)
+                .foregroundStyle(WaypointsColors.textPrimary)
             
             Text("Keep a private record of your travels, memories, ratings, and visited destination photos.")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(WaypointsColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
@@ -191,7 +195,7 @@ public struct JournalListView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(WaypointsColors.deepForest)
+                    .background(WaypointsColors.brandPrimary)
                     .clipShape(Capsule())
             }
         }

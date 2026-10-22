@@ -76,7 +76,7 @@ public struct DiscoveriesListView: View {
                                     try? modelContext.save()
                                 }
                             )
-                            .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                         }
@@ -85,7 +85,7 @@ public struct DiscoveriesListView: View {
                     .listStyle(.plain)
                 }
             }
-            .background(WaypointsTheme.background(for: scheme).ignoresSafeArea())
+            .background(WaypointsColors.background.ignoresSafeArea())
             .navigationTitle("Discoveries Inbox")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -97,7 +97,7 @@ public struct DiscoveriesListView: View {
                             Text("Paste")
                                 .fontWeight(.semibold)
                         }
-                        .foregroundColor(Color.waypointsGreen)
+                        .foregroundColor(WaypointsColors.brandPrimary)
                     }
                 }
             }
@@ -128,10 +128,10 @@ public struct DiscoveriesListView: View {
                 .font(WaypointsTypography.eyebrow)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(isSelected ? Color.waypointsGreen : WaypointsTheme.surface(for: scheme))
-                .foregroundColor(isSelected ? .white : WaypointsTheme.textPrimary(for: scheme))
-                .cornerRadius(16)
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(isSelected ? Color.clear : WaypointsTheme.cardBorder(for: scheme), lineWidth: 1))
+                .background(isSelected ? WaypointsColors.brandPrimary : WaypointsColors.surface)
+                .foregroundColor(isSelected ? .white : WaypointsColors.textPrimary)
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(isSelected ? Color.clear : WaypointsColors.border, lineWidth: 1))
         }
     }
     
@@ -223,14 +223,14 @@ private struct DiscoveryRowView: View {
                 HStack(spacing: 6) {
                     Image(systemName: discovery.platformIcon)
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color.waypointsTerracotta)
+                        .foregroundStyle(WaypointsColors.accentCoral)
                     Text(discovery.platformTitle)
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color(hex: "#F4EFE6"))
+                .background(WaypointsColors.brandPrimary.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 
                 Spacer()
@@ -243,14 +243,14 @@ private struct DiscoveryRowView: View {
                 Text("\"\(discovery.caption)\"")
                     .font(.system(size: 13, design: .serif))
                     .italic()
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.textPrimary)
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(hex: "#F9F8F5"))
+                    .background(WaypointsColors.background)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                            .stroke(WaypointsColors.border, lineWidth: 1)
                     )
             }
             
@@ -260,10 +260,10 @@ private struct DiscoveryRowView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "sparkles")
                             .font(.system(size: 11))
-                            .foregroundStyle(WaypointsColors.sunsetAmber)
+                            .foregroundStyle(Color(hex: "#E09F3E"))
                         Text("✨ Vision & NL Clues Detected (\(discovery.candidates.count)):")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(WaypointsColors.textSecondary)
                     }
                     
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -274,15 +274,15 @@ private struct DiscoveryRowView: View {
                                         .font(.system(size: 11))
                                     Text(cand.name)
                                         .font(.system(size: 12, weight: .semibold))
-                                        .foregroundStyle(WaypointsColors.deepForest)
+                                        .foregroundStyle(WaypointsColors.brandPrimary)
                                 }
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
-                                .background(Color(hex: "#F4EFE6"))
+                                .background(WaypointsColors.brandPrimary.opacity(0.08))
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
-                                        .stroke(WaypointsColors.deepForest.opacity(0.2), lineWidth: 1)
+                                        .stroke(WaypointsColors.brandPrimary.opacity(0.2), lineWidth: 1)
                                 )
                             }
                         }
@@ -294,7 +294,7 @@ private struct DiscoveryRowView: View {
             if !discovery.originalURL.isEmpty {
                 Text(discovery.originalURL)
                     .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
                     .lineLimit(1)
             }
             
@@ -303,10 +303,10 @@ private struct DiscoveryRowView: View {
                 if isIdentifying {
                     HStack(spacing: 6) {
                         ProgressView()
-                            .tint(WaypointsColors.deepForest)
+                            .tint(WaypointsColors.brandPrimary)
                         Text("Identifying…")
                             .font(.caption)
-                            .foregroundStyle(WaypointsColors.deepForest)
+                            .foregroundStyle(WaypointsColors.brandPrimary)
                     }
                     .padding(.vertical, 4)
                 } else if discovery.status == .needsConfirmation || !discovery.candidates.isEmpty {
@@ -316,30 +316,30 @@ private struct DiscoveryRowView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 9)
-                            .background(WaypointsColors.deepForest)
+                            .background(WaypointsColors.brandPrimary)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     
                     Button(action: onDismiss) {
                         Text("Dismiss")
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(WaypointsColors.textSecondary)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 9)
-                            .background(Color.white)
+                            .background(WaypointsColors.surface)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                                    .stroke(WaypointsColors.border, lineWidth: 1)
                             )
                     }
                 } else if discovery.status == .locationConfirmed {
                     HStack(spacing: 6) {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(WaypointsColors.deepForest)
+                            .foregroundStyle(WaypointsColors.brandPrimary)
                         Text("Pinned on Globe")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(WaypointsColors.deepForest)
+                            .foregroundStyle(WaypointsColors.brandPrimary)
                     }
                     .padding(.vertical, 4)
                 } else {
@@ -349,15 +349,16 @@ private struct DiscoveryRowView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 9)
-                            .background(WaypointsColors.deepForest)
+                            .background(WaypointsColors.brandPrimary)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                 }
             }
         }
         .padding(14)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
 }

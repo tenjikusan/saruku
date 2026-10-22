@@ -112,9 +112,10 @@ public struct PlacesListView: View {
                                 .fontWeight(.medium)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(selectedCollectionId == nil ? WaypointsColors.deepForest : Color.white)
-                                .foregroundStyle(selectedCollectionId == nil ? .white : WaypointsColors.deepForest)
+                                .background(selectedCollectionId == nil ? WaypointsColors.brandPrimary : WaypointsColors.surface)
+                                .foregroundStyle(selectedCollectionId == nil ? .white : WaypointsColors.textPrimary)
                                 .clipShape(Capsule())
+                                .overlay(Capsule().stroke(selectedCollectionId == nil ? Color.clear : WaypointsColors.border, lineWidth: 1))
                         }
                         
                         ForEach(collections) { col in
@@ -129,9 +130,10 @@ public struct PlacesListView: View {
                                 .fontWeight(.medium)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(selectedCollectionId == col.id ? Color(hex: col.colorHex) : Color.white)
+                                .background(selectedCollectionId == col.id ? Color(hex: col.colorHex) : WaypointsColors.surface)
                                 .foregroundStyle(selectedCollectionId == col.id ? .white : Color(hex: col.colorHex))
                                 .clipShape(Capsule())
+                                .overlay(Capsule().stroke(selectedCollectionId == col.id ? Color.clear : WaypointsColors.border, lineWidth: 1))
                             }
                         }
                     }
@@ -140,7 +142,7 @@ public struct PlacesListView: View {
             }
         }
         .padding(.vertical, 8)
-        .background(WaypointsColors.sandLight)
+        .background(WaypointsColors.background)
     }
     
     private var filteredPlaces: [Place] {
@@ -181,61 +183,71 @@ public struct PlacesListView: View {
         HStack(spacing: 12) {
             // Category / Thumbnail avatar box
             ZStack {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(WaypointsColors.mintMist.opacity(0.6))
-                    .frame(width: 44, height: 44)
-                
-                Text(place.categoryEmoji)
-                    .font(.system(size: 22))
+                if let photo = place.photoFileNames.first,
+                   let img = LocalMediaStorage.shared.loadImage(fileName: photo) {
+                    Image(uiImage: img)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 46, height: 46)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                } else {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(WaypointsColors.brandPrimary.opacity(0.08))
+                        .frame(width: 46, height: 46)
+                    
+                    Text(place.categoryEmoji)
+                        .font(.system(size: 22))
+                }
             }
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(WaypointsColors.border, lineWidth: 1))
             
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(place.name)
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.textPrimary)
                     
                     Text(place.categoryDisplay.uppercased())
                         .font(.system(size: 9, weight: .bold))
                         .padding(.horizontal, 5)
                         .padding(.vertical, 2)
-                        .background(WaypointsColors.deepForest.opacity(0.08))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .background(WaypointsColors.brandPrimary.opacity(0.1))
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                         .clipShape(Capsule())
                     
                     if place.isFavorite {
                         Image(systemName: "star.fill")
                             .font(.system(size: 11))
-                            .foregroundStyle(WaypointsColors.sunsetAmber)
+                            .foregroundStyle(Color(hex: "#E09F3E"))
                     }
                     
                     if place.isVisited {
                         Image(systemName: "checkmark.seal.fill")
                             .font(.system(size: 11))
-                            .foregroundStyle(WaypointsColors.deepForest)
+                            .foregroundStyle(WaypointsColors.brandPrimary)
                     }
                 }
                 
                 if !place.country.isEmpty {
                     Text(place.country)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WaypointsColors.textSecondary)
                 }
                 
                 HStack(spacing: 6) {
                     Text(place.formattedCoordinates)
                         .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WaypointsColors.textSecondary)
                     
                     Text("•")
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(WaypointsColors.border)
                     
                     Text(place.provenance.displayLabel)
                         .font(.system(size: 10))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(WaypointsColors.mintMist)
+                        .background(WaypointsColors.brandPrimary.opacity(0.08))
                         .clipShape(Capsule())
                 }
                 .padding(.top, 1)

@@ -47,7 +47,7 @@ public struct TripDetailView: View {
             }
             .padding(16)
         }
-        .background(WaypointsColors.sandLight.ignoresSafeArea())
+        .background(WaypointsColors.background.ignoresSafeArea())
         .navigationTitle(trip.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -72,7 +72,7 @@ public struct TripDetailView: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                 }
             }
         }
@@ -107,12 +107,12 @@ public struct TripDetailView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(trip.name)
                         .font(WaypointsTypography.display(24))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.textPrimary)
                     
                     if !trip.destination.isEmpty {
                         Text(trip.destination)
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(WaypointsColors.textSecondary)
                     }
                 }
                 
@@ -133,27 +133,28 @@ public struct TripDetailView: View {
             HStack(spacing: 16) {
                 Label("\(trip.startDate.formatted(date: .abbreviated, time: .omitted)) – \(trip.endDate.formatted(date: .abbreviated, time: .omitted))", systemName: "calendar")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
                 
                 Spacer()
                 
                 Text("\(trip.durationInDays) Days • \(trip.places.count) Places")
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.brandPrimary)
             }
             
             if !trip.tripDescription.isEmpty {
                 Text(trip.tripDescription)
                     .font(.subheadline)
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.textPrimary)
                     .padding(.top, 4)
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     // MARK: - Days Selector Tabs
@@ -178,6 +179,15 @@ public struct TripDetailView: View {
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
+                        .background(isSelected ? WaypointsColors.brandPrimary : WaypointsColors.surface)
+                        .foregroundStyle(isSelected ? Color.white : WaypointsColors.textPrimary)
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(isSelected ? Color.clear : WaypointsColors.border, lineWidth: 1))
+                    }
+                }
+            }
+        }
+    }
                         .background(isSelected ? WaypointsColors.deepForest : Color.white)
                         .foregroundStyle(isSelected ? .white : WaypointsColors.deepForest)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -297,7 +307,7 @@ public struct TripDetailView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(stop.isCompleted ? WaypointsColors.deepForest : WaypointsColors.mintMist)
+                        .fill(stop.isCompleted ? WaypointsColors.brandPrimary : WaypointsColors.brandPrimary.opacity(0.12))
                         .frame(width: 36, height: 36)
                     
                     if stop.isCompleted {
@@ -307,7 +317,7 @@ public struct TripDetailView: View {
                     } else {
                         Text("\(index)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(WaypointsColors.deepForest)
+                            .foregroundStyle(WaypointsColors.brandPrimary)
                     }
                 }
             }
@@ -315,20 +325,20 @@ public struct TripDetailView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(stop.placeName)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.textPrimary)
                     .strikethrough(stop.isCompleted)
                 
                 HStack(spacing: 8) {
                     if !stop.scheduledTime.isEmpty {
                         Label(stop.scheduledTime, systemName: "clock")
                             .font(.caption2)
-                            .foregroundStyle(WaypointsColors.terracotta)
+                            .foregroundStyle(WaypointsColors.accentCoral)
                     }
                     
                     if !stop.notes.isEmpty {
                         Text(stop.notes)
                             .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(WaypointsColors.textSecondary)
                             .lineLimit(1)
                     }
                 }
@@ -345,13 +355,14 @@ public struct TripDetailView: View {
             } label: {
                 Image(systemName: "trash")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
             }
         }
         .padding(14)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 1)
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 1)
     }
     
     private var noDaysEmptyState: some View {

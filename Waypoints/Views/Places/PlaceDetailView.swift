@@ -52,7 +52,7 @@ public struct PlaceDetailView: View {
             }
             .padding(16)
         }
-        .background(WaypointsColors.sandLight.ignoresSafeArea())
+        .background(WaypointsColors.background.ignoresSafeArea())
         .navigationTitle(place.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -84,7 +84,7 @@ public struct PlaceDetailView: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                         .font(.system(size: 18))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                 }
             }
         }
@@ -184,9 +184,10 @@ public struct PlaceDetailView: View {
             .padding(.top, 4)
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     // MARK: - Actions Row
@@ -201,7 +202,7 @@ public struct PlaceDetailView: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(WaypointsColors.deepForest)
+                    .background(WaypointsColors.brandPrimary)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             
@@ -210,14 +211,14 @@ public struct PlaceDetailView: View {
             } label: {
                 Label("Directions", systemName: "arrow.triangle.turn.up.right.diamond.fill")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.brandPrimary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.white)
+                    .background(WaypointsColors.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(WaypointsColors.deepForest.opacity(0.25), lineWidth: 1)
+                            .stroke(WaypointsColors.border, lineWidth: 1)
                     )
             }
         }
@@ -230,7 +231,7 @@ public struct PlaceDetailView: View {
             HStack {
                 Text("Saved Photos & Screenshots")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.brandPrimary)
                 
                 Spacer()
                 
@@ -241,7 +242,7 @@ public struct PlaceDetailView: View {
                 ) {
                     Label("Add Photo", systemName: "photo.badge.plus")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                 }
                 .onChange(of: selectedPhotoItem) { _, item in
                     if let item {
@@ -253,7 +254,7 @@ public struct PlaceDetailView: View {
             if place.imageFileNames.isEmpty {
                 Text("No screenshots or photos attached.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
                     .italic()
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -266,6 +267,7 @@ public struct PlaceDetailView: View {
                                         .scaledToFill()
                                         .frame(width: 90, height: 90)
                                         .clipShape(RoundedRectangle(cornerRadius: 12))
+                                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(WaypointsColors.border, lineWidth: 1))
                                         .onTapGesture {
                                             previewImageFileName = fileName
                                         }
@@ -289,9 +291,10 @@ public struct PlaceDetailView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     // MARK: - Metadata Card
@@ -300,44 +303,45 @@ public struct PlaceDetailView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Waypoint Provenance")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(WaypointsColors.deepForest)
+                .foregroundStyle(WaypointsColors.brandPrimary)
             
             HStack {
                 Label(place.provenance.displayLabel, systemName: place.provenance.systemIcon)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.brandPrimary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(WaypointsColors.mintMist)
+                    .background(WaypointsColors.brandPrimary.opacity(0.08))
                     .clipShape(Capsule())
                 
                 Spacer()
                 
                 Text("Precision: \(place.precision.capitalized)")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
             }
             
             if !place.evidence.isEmpty {
                 Text("Evidence: \(place.evidence)")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
             }
             
             HStack {
                 Text("Created: \(place.createdAt.formatted(date: .abbreviated, time: .shortened))")
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
                 Spacer()
                 Text("Updated: \(place.updatedAt.formatted(date: .abbreviated, time: .shortened))")
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     // MARK: - Collections Section
@@ -346,12 +350,12 @@ public struct PlaceDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Collections")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(WaypointsColors.deepForest)
+                .foregroundStyle(WaypointsColors.brandPrimary)
             
             if place.collections.isEmpty {
                 Text("Not assigned to any collections")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -361,7 +365,7 @@ public struct PlaceDetailView: View {
                                     .foregroundStyle(Color(hex: col.colorHex))
                                 Text(col.name)
                                     .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(WaypointsColors.deepForest)
+                                    .foregroundStyle(WaypointsColors.textPrimary)
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
@@ -373,9 +377,10 @@ public struct PlaceDetailView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     // MARK: - Notes Section
@@ -384,25 +389,26 @@ public struct PlaceDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Notes & Details")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(WaypointsColors.deepForest)
+                .foregroundStyle(WaypointsColors.brandPrimary)
             
             if place.note.isEmpty {
                 Text("No notes added yet.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
                     .italic()
             } else {
                 Text(place.note)
                     .font(.system(size: 15))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.textPrimary)
                     .lineSpacing(4)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     // MARK: - Multiple Source References Section
@@ -412,7 +418,7 @@ public struct PlaceDetailView: View {
             HStack {
                 Text("Content Sources")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.brandPrimary)
                 
                 Spacer()
                 
@@ -421,7 +427,7 @@ public struct PlaceDetailView: View {
                 } label: {
                     Label("Add Source", systemName: "plus")
                         .font(.caption)
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                 }
             }
             
@@ -438,14 +444,15 @@ public struct PlaceDetailView: View {
             if place.sourceURL == nil && place.sourceReferences.isEmpty {
                 Text("No external links attached to this waypoint.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
                     .italic()
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     private func sourceItemRow(url: String, platform: String, title: String) -> some View {
@@ -454,10 +461,10 @@ public struct PlaceDetailView: View {
                 Text(platform)
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.brandPrimary)
                 Text(url)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(WaypointsColors.textSecondary)
                     .lineLimit(1)
             }
             
@@ -469,12 +476,12 @@ public struct PlaceDetailView: View {
                 } label: {
                     Image(systemName: "arrow.up.right.square")
                         .font(.system(size: 16))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                 }
             }
         }
         .padding(8)
-        .background(WaypointsColors.mintMist.opacity(0.4))
+        .background(WaypointsColors.brandPrimary.opacity(0.06))
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
     
@@ -493,7 +500,7 @@ public struct PlaceDetailView: View {
             .font(.system(size: 15, weight: .medium))
             .foregroundStyle(.red)
             .padding(.vertical, 14)
-            .background(Color.white)
+            .background(WaypointsColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)

@@ -59,58 +59,61 @@ public struct GlobeScreenView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                // Warm Sand Canvas Background
-                WaypointsColors.sandLight
+                // Adaptive Porcelain / Deep Ocean Background
+                WaypointsColors.background
                     .ignoresSafeArea()
                 
                 // Hardware-Accelerated 3D SceneKit Globe or Cartographic Canvas Globe
-                if use3DGlobe {
-                    SceneKitGlobeView(
-                        places: displayedPlaces,
-                        selectedPlace: selectedPlace,
-                        isTapModeActive: displayMode == .pickLocation,
-                        onPlaceSelected: { place in
-                            hapticFeedback.impactOccurred()
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                selectedPlace = place
+                Group {
+                    if use3DGlobe {
+                        SceneKitGlobeView(
+                            places: displayedPlaces,
+                            selectedPlace: selectedPlace,
+                            isTapModeActive: displayMode == .pickLocation,
+                            onPlaceSelected: { place in
+                                hapticFeedback.impactOccurred()
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    selectedPlace = place
+                                }
+                            },
+                            onGlobeTapped: { lat, lon in
+                                hapticFeedback.impactOccurred()
+                                tappedCoordinate = (lat, lon)
+                                showingSaveTappedPinSheet = true
                             }
-                        },
-                        onGlobeTapped: { lat, lon in
-                            hapticFeedback.impactOccurred()
-                            tappedCoordinate = (lat, lon)
-                            showingSaveTappedPinSheet = true
-                        }
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    NativeGlobeView(
-                        places: displayedPlaces,
-                        selectedPlace: selectedPlace,
-                        isTapModeActive: displayMode == .pickLocation,
-                        onPlaceSelected: { place in
-                            hapticFeedback.impactOccurred()
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                selectedPlace = place
+                        )
+                    } else {
+                        NativeGlobeView(
+                            places: displayedPlaces,
+                            selectedPlace: selectedPlace,
+                            isTapModeActive: displayMode == .pickLocation,
+                            onPlaceSelected: { place in
+                                hapticFeedback.impactOccurred()
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    selectedPlace = place
+                                }
+                            },
+                            onGlobeTapped: { lat, lon in
+                                hapticFeedback.impactOccurred()
+                                tappedCoordinate = (lat, lon)
+                                showingSaveTappedPinSheet = true
                             }
-                        },
-                        onGlobeTapped: { lat, lon in
-                            hapticFeedback.impactOccurred()
-                            tappedCoordinate = (lat, lon)
-                            showingSaveTappedPinSheet = true
-                        }
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        )
+                    }
                 }
+                .ignoresSafeArea()
                 
-                // Overlay Controls (Top & Bottom)
-                VStack {
+                // Floating Overlay Controls (Top & Bottom)
+                VStack(spacing: 8) {
                     topControlsBar
                     
                     // Filter Chips Bar (in Trip or Collection mode)
                     if displayMode == .tripMode {
                         tripFilterBar
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                     } else if !collections.isEmpty && displayMode == .explore {
                         collectionFilterBar
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                     
                     Spacer()
@@ -119,7 +122,10 @@ public struct GlobeScreenView: View {
                     VStack(spacing: 12) {
                         if let selected = selectedPlace {
                             placePreviewCard(selected)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                                    removal: .opacity.combined(with: .scale(scale: 0.95))
+                                ))
                         }
                         
                         bottomActionBar
@@ -164,73 +170,91 @@ public struct GlobeScreenView: View {
     // MARK: - Top Controls Bar
     
     private var topControlsBar: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Waypoints")
-                    .font(WaypointsTypography.display(22))
-                    .foregroundStyle(WaypointsColors.deepForest)
+        VStack(spacing: 8) {
+            // Header: Branding & Action Utilities
+            HStack(alignment: .center) {
+                HStack(spacing: 8) {
+                    Text("Waypoints")
+                        .font(WaypointsTypography.display(24))
+                        .foregroundStyle(WaypointsColors.textPrimary)
+                    
+                    Text("\(displayedPlaces.count)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(WaypointsColors.brandPrimary)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(WaypointsColors.brandPrimary.opacity(0.12))
+                        .clipShape(Capsule())
+                }
                 
-                Text("\(displayedPlaces.count) visible pin\(displayedPlaces.count == 1 ? "" : "s")")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            
-            Spacer()
-            
-            // Mode Selector Pill
-            HStack(spacing: 2) {
-                ForEach(GlobeDisplayMode.allCases) { mode in
+                Spacer()
+                
+                HStack(spacing: 8) {
+                    // 3D SceneKit vs Cartographic Globe Toggle
                     Button {
                         hapticFeedback.impactOccurred()
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            displayMode = mode
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            use3DGlobe.toggle()
                         }
                     } label: {
-                        Text(mode.rawValue)
-                            .font(.system(size: 11, weight: .semibold))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(displayMode == mode ? WaypointsColors.deepForest : Color.clear)
-                            .foregroundStyle(displayMode == mode ? .white : WaypointsColors.deepForest)
-                            .clipShape(Capsule())
+                        Image(systemName: use3DGlobe ? "globe.americas.fill" : "map.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .frame(width: 36, height: 36)
+                            .background(use3DGlobe ? WaypointsColors.brandPrimary : WaypointsColors.surface)
+                            .foregroundStyle(use3DGlobe ? .white : WaypointsColors.brandPrimary)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(WaypointsColors.border, lineWidth: 1))
+                            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
+                    }
+                    
+                    // Search button
+                    Button {
+                        hapticFeedback.impactOccurred()
+                        showingSearchSheet = true
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 13, weight: .bold))
+                            .frame(width: 36, height: 36)
+                            .background(WaypointsColors.surface)
+                            .foregroundStyle(WaypointsColors.textPrimary)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(WaypointsColors.border, lineWidth: 1))
+                            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
                     }
                 }
             }
-            .padding(2)
-            .background(Color.white)
-            .clipShape(Capsule())
-            .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
+            .padding(.top, 4)
             
-            // 3D SceneKit vs Cartographic Globe Toggle
-            Button {
-                hapticFeedback.impactOccurred()
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    use3DGlobe.toggle()
+            // Mode Selector Floating Capsule: [Explore | Tap to Pin | Trips]
+            HStack(spacing: 4) {
+                ForEach(GlobeDisplayMode.allCases) { mode in
+                    let isSelected = displayMode == mode
+                    Button {
+                        hapticFeedback.impactOccurred()
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            displayMode = mode
+                        }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: mode.icon)
+                                .font(.system(size: 11, weight: .semibold))
+                            Text(mode.rawValue)
+                                .font(.system(size: 12, weight: isSelected ? .bold : .medium))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(isSelected ? WaypointsColors.brandPrimary : Color.clear)
+                        .foregroundStyle(isSelected ? Color.white : WaypointsColors.textSecondary)
+                        .clipShape(Capsule())
+                    }
                 }
-            } label: {
-                Image(systemName: use3DGlobe ? "globe.americas.fill" : "map")
-                    .font(.system(size: 14, weight: .semibold))
-                    .padding(9)
-                    .background(use3DGlobe ? WaypointsColors.deepForest : Color.white)
-                    .foregroundStyle(use3DGlobe ? .white : WaypointsColors.deepForest)
-                    .clipShape(Circle())
-                    .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
             }
-            
-            // Search button
-            Button {
-                showingSearchSheet = true
-            } label: {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 14, weight: .semibold))
-                    .padding(9)
-                    .background(Color.white)
-                    .foregroundStyle(WaypointsColors.deepForest)
-                    .clipShape(Circle())
-                    .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
-            }
+            .padding(3)
+            .background(WaypointsColors.surface)
+            .clipShape(Capsule())
+            .overlay(Capsule().stroke(WaypointsColors.border, lineWidth: 1))
+            .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
         }
-        .padding(.top, 8)
     }
     
     // MARK: - Trip Filter Bar
@@ -241,13 +265,17 @@ public struct GlobeScreenView: View {
                 if trips.isEmpty {
                     Text("No trips planned yet. Create trips in the Trips tab.")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.vertical, 4)
+                        .foregroundStyle(WaypointsColors.textSecondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(WaypointsColors.surface)
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(WaypointsColors.border, lineWidth: 1))
                 } else {
                     ForEach(trips) { trip in
                         let isSelected = (selectedTripId ?? trips.first?.id) == trip.id
                         Button {
-                            withAnimation { selectedTripId = trip.id }
+                            withAnimation(.spring(response: 0.3)) { selectedTripId = trip.id }
                         } label: {
                             HStack(spacing: 6) {
                                 Image(systemName: "airplane")
@@ -255,18 +283,19 @@ public struct GlobeScreenView: View {
                                 Text("(\(trip.places.count))")
                                     .font(.caption2)
                             }
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: 12, weight: .semibold))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(isSelected ? Color(hex: trip.colorHex) : Color.white)
-                            .foregroundStyle(isSelected ? .white : WaypointsColors.deepForest)
+                            .background(isSelected ? Color(hex: trip.colorHex) : WaypointsColors.surface)
+                            .foregroundStyle(isSelected ? .white : WaypointsColors.textPrimary)
                             .clipShape(Capsule())
-                            .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 1)
+                            .overlay(Capsule().stroke(isSelected ? Color.clear : WaypointsColors.border, lineWidth: 1))
+                            .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 1)
                         }
                     }
                 }
             }
-            .padding(.top, 4)
+            .padding(.top, 2)
         }
     }
     
@@ -276,40 +305,42 @@ public struct GlobeScreenView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 Button {
-                    withAnimation { selectedCollectionId = nil }
+                    withAnimation(.spring(response: 0.3)) { selectedCollectionId = nil }
                 } label: {
                     Text("All Pins")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 12, weight: .semibold))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(selectedCollectionId == nil ? WaypointsColors.deepForest : Color.white)
-                        .foregroundStyle(selectedCollectionId == nil ? .white : WaypointsColors.deepForest)
+                        .background(selectedCollectionId == nil ? WaypointsColors.brandPrimary : WaypointsColors.surface)
+                        .foregroundStyle(selectedCollectionId == nil ? .white : WaypointsColors.textPrimary)
                         .clipShape(Capsule())
-                        .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 1)
+                        .overlay(Capsule().stroke(selectedCollectionId == nil ? Color.clear : WaypointsColors.border, lineWidth: 1))
+                        .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 1)
                 }
                 
                 ForEach(collections) { col in
                     let isSelected = selectedCollectionId == col.id
                     Button {
-                        withAnimation { selectedCollectionId = isSelected ? nil : col.id }
+                        withAnimation(.spring(response: 0.3)) { selectedCollectionId = isSelected ? nil : col.id }
                     } label: {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 5) {
                             Image(systemName: col.systemIcon)
                             Text(col.name)
                             Text("(\(col.places.count))")
                                 .font(.caption2)
                         }
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 12, weight: .semibold))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(isSelected ? Color(hex: col.colorHex) : Color.white)
-                        .foregroundStyle(isSelected ? .white : WaypointsColors.deepForest)
+                        .background(isSelected ? Color(hex: col.colorHex) : WaypointsColors.surface)
+                        .foregroundStyle(isSelected ? .white : WaypointsColors.textPrimary)
                         .clipShape(Capsule())
-                        .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 1)
+                        .overlay(Capsule().stroke(isSelected ? Color.clear : WaypointsColors.border, lineWidth: 1))
+                        .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 1)
                     }
                 }
             }
-            .padding(.top, 4)
+            .padding(.top, 2)
         }
     }
     
@@ -319,86 +350,97 @@ public struct GlobeScreenView: View {
         HStack(spacing: 12) {
             // Category Emoji or Media Thumbnail Box
             ZStack {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color(hex: "#F4EFE6"))
-                    .frame(width: 56, height: 56)
-                Text(place.categoryEmoji)
-                    .font(.system(size: 26))
+                if let photo = place.photoFileNames.first,
+                   let img = LocalMediaStorage.shared.loadImage(fileName: photo) {
+                    Image(uiImage: img)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 54, height: 54)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                } else {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(WaypointsColors.brandPrimary.opacity(0.08))
+                        .frame(width: 54, height: 54)
+                    Text(place.categoryEmoji)
+                        .font(.system(size: 26))
+                }
             }
-            .shadow(color: .black.opacity(0.04), radius: 3, x: 0, y: 1)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(WaypointsColors.border, lineWidth: 1))
             
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(place.categoryDisplay.uppercased())
                         .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(Color(hex: "#B27C61"))
+                        .foregroundStyle(WaypointsColors.brandPrimary)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color(hex: "#F4EFE6"))
+                        .background(WaypointsColors.brandPrimary.opacity(0.1))
                         .clipShape(RoundedRectangle(cornerRadius: 4))
-                    
-                    Text(place.provenance.displayLabel)
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
                     
                     if place.isFavorite {
                         Text("★")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(WaypointsColors.sunsetAmber)
+                            .foregroundStyle(Color(hex: "#E09F3E"))
                     }
                     if place.isVisited {
                         Text("✓")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(WaypointsColors.deepForest)
+                            .foregroundStyle(WaypointsColors.brandPrimary)
+                    }
+                    
+                    Spacer()
+                    
+                    Button {
+                        withAnimation(.spring(response: 0.3)) {
+                            selectedPlace = nil
+                        }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(WaypointsColors.textSecondary)
+                            .frame(width: 22, height: 22)
+                            .background(WaypointsColors.border.opacity(0.5))
+                            .clipShape(Circle())
                     }
                 }
                 
                 Text(place.name)
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(WaypointsColors.deepForest)
+                    .foregroundStyle(WaypointsColors.textPrimary)
                     .lineLimit(1)
                 
                 let locationText = [place.city, place.region, place.country].filter { !$0.isEmpty }.joined(separator: ", ")
                 if !locationText.isEmpty {
                     Text(locationText)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WaypointsColors.textSecondary)
                         .lineLimit(1)
                 } else {
                     Text(place.formattedCoordinates)
                         .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(WaypointsColors.textSecondary)
                 }
             }
             
-            Spacer()
-            
-            // Circular Detail Button matching mockup
+            // Detail Navigation Arrow Button
             Button {
                 hapticFeedback.impactOccurred()
                 showingPlaceDetail = true
             } label: {
                 Image(systemName: "arrow.right")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(width: 34, height: 34)
-                    .background(WaypointsColors.deepForest)
+                    .background(WaypointsColors.brandPrimary)
                     .clipShape(Circle())
-                    .shadow(color: WaypointsColors.deepForest.opacity(0.3), radius: 4, x: 0, y: 2)
-            }
-            
-            Button {
-                selectedPlace = nil
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.secondary)
-                    .font(.system(size: 18))
+                    .shadow(color: WaypointsColors.brandPrimary.opacity(0.35), radius: 6, x: 0, y: 2)
             }
         }
         .padding(12)
-        .background(Color.white)
+        .background(WaypointsColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 18))
-        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 4)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(WaypointsColors.border, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 4)
     }
     
     // MARK: - Bottom Action Bar
@@ -407,37 +449,40 @@ public struct GlobeScreenView: View {
         HStack {
             if displayMode == .pickLocation {
                 HStack(spacing: 6) {
-                    Image(systemName: "cross.circle.fill")
-                        .foregroundStyle(WaypointsColors.terracotta)
-                    Text("Tap anywhere on Earth to drop pin")
+                    Circle()
+                        .fill(WaypointsColors.accentCoral)
+                        .frame(width: 8, height: 8)
+                    Text("Tap Earth to drop pin")
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(WaypointsColors.deepForest)
+                        .foregroundStyle(WaypointsColors.textPrimary)
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color.white)
+                .background(WaypointsColors.surface)
                 .clipShape(Capsule())
-                .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)
+                .overlay(Capsule().stroke(WaypointsColors.border, lineWidth: 1))
+                .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
             }
             
             Spacer()
             
             // Floating Quick Add Discovery Button
             Button {
+                hapticFeedback.impactOccurred()
                 showingQuickAddSheet = true
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                     Text("Add Discovery")
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 12)
-                .background(WaypointsColors.deepForest)
+                .background(WaypointsColors.brandPrimary)
                 .foregroundStyle(.white)
                 .clipShape(Capsule())
-                .shadow(color: WaypointsColors.deepForest.opacity(0.35), radius: 10, x: 0, y: 4)
+                .shadow(color: WaypointsColors.brandPrimary.opacity(0.35), radius: 10, x: 0, y: 4)
             }
         }
     }
