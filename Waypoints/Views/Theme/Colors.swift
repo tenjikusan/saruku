@@ -39,3 +39,17 @@ public struct WaypointsTheme {
         scheme == .dark ? Color(red: 0.65, green: 0.70, blue: 0.66) : Color(red: 0.42, green: 0.48, blue: 0.44)
     }
 }
+
+public enum WaypointsColors {
+    public static let deepForest = Color(hex: "#244B3B")
+    public static let terracotta = Color(hex: "#D97447")
+    public static let sandLight = Color(hex: "#FAF9F5")
+    public static let sandMedium = Color(hex: "#EAD5BA")
+    public static let sageGreen = Color(hex: "#7E9B88")
+    public static let sunsetAmber = Color(hex: "#D48B46")
+    public static let cardBackground = Color.white
+    public static let textPrimary = Color(hex: "#244B3B")
+    public static let textSecondary = Color(hex: "#73816C")
+    public static let borderLight = Color(hex: "#E6E9DF")
+    public static let mintMist = Color(hex: "#E8F0EC")
+}

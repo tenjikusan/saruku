@@ -70,6 +70,10 @@ public struct DiscoveriesListView: View {
                                 },
                                 onIdentify: {
                                     runIdentification(for: disc)
+                                },
+                                onDismiss: {
+                                    modelContext.delete(disc)
+                                    try? modelContext.save()
                                 }
                             )
                             .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
@@ -208,76 +212,152 @@ private struct DiscoveryRowView: View {
     let isIdentifying: Bool
     let onReview: () -> Void
     let onIdentify: () -> Void
+    let onDismiss: () -> Void
     
     @Environment(\.colorScheme) private var scheme
     
     var body: some View {
-        CardContainer {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    StatusBadge(status: discovery.status)
-                    Spacer()
-                    Text(discovery.collectionName)
-                        .font(WaypointsTypography.eyebrow)
-                        .foregroundColor(WaypointsTheme.textSecondary(for: scheme))
+        VStack(alignment: .leading, spacing: 12) {
+            // Header: Source Type Pill and Status Badge
+            HStack(alignment: .center) {
+                HStack(spacing: 6) {
+                    Image(systemName: discovery.platformIcon)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.waypointsTerracotta)
+                    Text(discovery.platformTitle)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(WaypointsColors.deepForest)
                 }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color(hex: "#F4EFE6"))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
                 
-                if !discovery.caption.isEmpty {
-                    Text(discovery.caption)
-                        .font(WaypointsTypography.subheadline)
-                        .foregroundColor(WaypointsTheme.textPrimary(for: scheme))
-                        .lineLimit(2)
-                }
+                Spacer()
                 
-                if !discovery.originalURL.isEmpty {
-                    Text(discovery.originalURL)
-                        .font(WaypointsTypography.caption)
-                        .foregroundColor(Color.waypointsSage)
-                        .lineLimit(1)
-                }
-                
-                Text(discovery.statusMessage)
-                    .font(WaypointsTypography.caption)
-                    .foregroundColor(WaypointsTheme.textSecondary(for: scheme))
-                    .lineLimit(2)
-                
-                HStack {
-                    Spacer()
-                    if isIdentifying {
+                StatusBadge(status: discovery.status)
+            }
+            
+            // Quoted Caption Block
+            if !discovery.caption.isEmpty {
+                Text("\"\(discovery.caption)\"")
+                    .font(.system(size: 13, design: .serif))
+                    .italic()
+                    .foregroundStyle(WaypointsColors.deepForest)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(hex: "#F9F8F5"))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                    )
+            }
+            
+            // Detected Clues Chips
+            if !discovery.candidates.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 11))
+                            .foregroundStyle(WaypointsColors.sunsetAmber)
+                        Text("✨ Vision & NL Clues Detected (\(discovery.candidates.count)):")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 6) {
-                            ProgressView()
-                                .tint(Color.waypointsGreen)
-                            Text("Identifying…")
-                                .font(WaypointsTypography.caption)
-                                .foregroundColor(Color.waypointsGreen)
-                        }
-                    } else if discovery.status == .needsConfirmation || discovery.status == .needsInfo {
-                        Button {
-                            onReview()
-                        } label: {
-                            Text(discovery.status == .needsConfirmation ? "Review Location 📍" : "Add Location Details")
-                                .font(WaypointsTypography.eyebrow)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.waypointsGreen)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-                    } else if discovery.status == .savedAwaiting || discovery.status == .failed {
-                        Button {
-                            onIdentify()
-                        } label: {
-                            Text("Find Location ➔")
-                                .font(WaypointsTypography.eyebrow)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.waypointsSage.opacity(0.2))
-                                .foregroundColor(Color.waypointsGreen)
-                                .cornerRadius(8)
+                            ForEach(discovery.candidates) { cand in
+                                HStack(spacing: 4) {
+                                    Text("📍")
+                                        .font(.system(size: 11))
+                                    Text(cand.name)
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundStyle(WaypointsColors.deepForest)
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(hex: "#F4EFE6"))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(WaypointsColors.deepForest.opacity(0.2), lineWidth: 1)
+                                )
+                            }
                         }
                     }
                 }
             }
+            
+            // URL Subtitle if available
+            if !discovery.originalURL.isEmpty {
+                Text(discovery.originalURL)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            
+            // Action Buttons
+            HStack(spacing: 8) {
+                if isIdentifying {
+                    HStack(spacing: 6) {
+                        ProgressView()
+                            .tint(WaypointsColors.deepForest)
+                        Text("Identifying…")
+                            .font(.caption)
+                            .foregroundStyle(WaypointsColors.deepForest)
+                    }
+                    .padding(.vertical, 4)
+                } else if discovery.status == .needsConfirmation || !discovery.candidates.isEmpty {
+                    Button(action: onReview) {
+                        Text(discovery.candidates.count > 1 ? "Confirm & Pin (\(discovery.candidates.count))" : "Confirm & Pin")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 9)
+                            .background(WaypointsColors.deepForest)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    
+                    Button(action: onDismiss) {
+                        Text("Dismiss")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 9)
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                            )
+                    }
+                } else if discovery.status == .locationConfirmed {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(WaypointsColors.deepForest)
+                        Text("Pinned on Globe")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(WaypointsColors.deepForest)
+                    }
+                    .padding(.vertical, 4)
+                } else {
+                    Button(action: onIdentify) {
+                        Text("Find Location ➔")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 9)
+                            .background(WaypointsColors.deepForest)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                }
+            }
         }
+        .padding(14)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
 }

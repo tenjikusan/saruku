@@ -40,7 +40,6 @@ public struct RecentlySavedProvider: TimelineProvider {
     public func getTimeline(in context: Context, completion: @escaping (Timeline<SharedSnapshotEntry>) -> Void) {
         let snapshot = WidgetSnapshotService.readSnapshot()
         let entry = SharedSnapshotEntry(date: Date(), snapshot: snapshot)
-        // Refresh every 30 minutes or when app notifies
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 30, to: Date()) ?? Date()
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)

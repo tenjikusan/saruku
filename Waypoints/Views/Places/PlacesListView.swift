@@ -179,11 +179,29 @@ public struct PlacesListView: View {
     
     private func placeRow(_ place: Place) -> some View {
         HStack(spacing: 12) {
+            // Category / Thumbnail avatar box
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(WaypointsColors.mintMist.opacity(0.6))
+                    .frame(width: 44, height: 44)
+                
+                Text(place.categoryEmoji)
+                    .font(.system(size: 22))
+            }
+            
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(place.name)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(WaypointsColors.deepForest)
+                    
+                    Text(place.categoryDisplay.uppercased())
+                        .font(.system(size: 9, weight: .bold))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(WaypointsColors.deepForest.opacity(0.08))
+                        .foregroundStyle(WaypointsColors.deepForest)
+                        .clipShape(Capsule())
                     
                     if place.isFavorite {
                         Image(systemName: "star.fill")
@@ -206,21 +224,21 @@ public struct PlacesListView: View {
                 
                 HStack(spacing: 6) {
                     Text(place.formattedCoordinates)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(.system(size: 11, design: .monospaced))
                         .foregroundStyle(.secondary)
                     
                     Text("•")
                         .foregroundStyle(.tertiary)
                     
                     Text(place.provenance.displayLabel)
-                        .font(.system(size: 11))
+                        .font(.system(size: 10))
                         .foregroundStyle(WaypointsColors.deepForest)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(WaypointsColors.mintMist)
                         .clipShape(Capsule())
                 }
-                .padding(.top, 2)
+                .padding(.top, 1)
             }
             
             Spacer()

@@ -100,6 +100,28 @@ public final class Place {
         String(format: "%.4f°, %.4f°", latitude, longitude)
     }
     
+    public var categoryDisplay: String {
+        category.isEmpty ? "Destination" : category
+    }
+    
+    public var categoryEmoji: String {
+        switch category.lowercased() {
+        case "scenic", "nature", "lake": return "🏞️"
+        case "temple", "shrine", "historic": return "⛩️"
+        case "mountain", "hiking", "park": return "🏔️"
+        case "coastal", "beach", "island": return "🏖️"
+        case "food", "cafe", "restaurant", "good eats": return "☕"
+        case "city", "architecture": return "🏛️"
+        default:
+            switch theme.lowercased() {
+            case "temple": return "⛩️"
+            case "desert": return "🏜️"
+            case "mountain": return "🏔️"
+            default: return "🏞️"
+            }
+        }
+    }
+    
     public var primaryCollectionName: String {
         collections.first?.name ?? "Dream trips"
     }

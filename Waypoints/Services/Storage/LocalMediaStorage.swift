@@ -56,6 +56,25 @@ public final class LocalMediaStorage: @unchecked Sendable {
         }
     }
     
+    /// Saves raw image data with an optional preferred name.
+    public func saveImage(data: Data, preferredName: String? = nil) -> String? {
+        let fileName = preferredName ?? "media_\(UUID().uuidString).jpg"
+        let fileURL = mediaDirectoryURL.appendingPathComponent(fileName)
+        do {
+            try data.write(to: fileURL, options: .atomic)
+            return fileName
+        } catch {
+            return nil
+        }
+    }
+    
+    /// Loads raw image data from disk.
+    public func loadImageData(fileName: String) -> Data? {
+        let fileURL = mediaDirectoryURL.appendingPathComponent(fileName)
+        guard FileManager.default.fileExists(atPath: fileURL.path) else { return nil }
+        return try? Data(contentsOf: fileURL)
+    }
+    
     /// Loads a UIImage from a stored file name or relative path.
     public func loadImage(fileName: String) -> UIImage? {
         let fileURL = mediaDirectoryURL.appendingPathComponent(fileName)

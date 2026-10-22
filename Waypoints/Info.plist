@@ -24,6 +24,8 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Waypoints uses your selected travel screenshots to identify landmarks and extract location text directly on-device.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Waypoints uses your location to calculate distances to nearby saved destinations and pins.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

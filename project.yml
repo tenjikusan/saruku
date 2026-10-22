@@ -76,6 +76,7 @@ targets:
         PRODUCT_NAME: WaypointsWidget
         INFOPLIST_FILE: WaypointsWidget/Info.plist
         CODE_SIGN_ENTITLEMENTS: WaypointsWidget/Entitlements/WaypointsWidget.entitlements
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: WIDGET_EXTENSION
     frameworks:
       - framework: WidgetKit.framework
       - framework: SwiftUI.framework

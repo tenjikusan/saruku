@@ -101,6 +101,27 @@ public final class Discovery {
         }
     }
     
+    public var platformIcon: String {
+        if !imageFileNames.isEmpty { return "camera.fill" }
+        let url = originalURL.lowercased()
+        if url.contains("instagram.com") { return "camera.fill" }
+        if url.contains("maps.google.com") || url.contains("google.com/maps") || url.contains("maps.apple.com") { return "map.fill" }
+        if url.contains("youtube.com") || url.contains("youtu.be") { return "play.rectangle.fill" }
+        if url.contains("tiktok.com") { return "video.fill" }
+        return "link"
+    }
+    
+    public var platformTitle: String {
+        if !imageFileNames.isEmpty { return "Screenshot / Photo" }
+        let url = originalURL.lowercased()
+        if url.contains("instagram.com") { return "Instagram Post" }
+        if url.contains("maps.google.com") || url.contains("google.com/maps") { return "Google Maps Link" }
+        if url.contains("maps.apple.com") { return "Apple Maps Pin" }
+        if url.contains("youtube.com") || url.contains("youtu.be") { return "YouTube Travel Video" }
+        if url.contains("tiktok.com") { return "TikTok Video" }
+        return "Shared Web Link"
+    }
+    
     public var candidates: [LocationCandidate] {
         get {
             guard let data = candidatesJSON?.data(using: .utf8),

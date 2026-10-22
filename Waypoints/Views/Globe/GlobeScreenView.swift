@@ -4,7 +4,7 @@ import SwiftData
 public enum GlobeDisplayMode: String, CaseIterable, Identifiable {
     case explore = "Explore"
     case pickLocation = "Tap to Pin"
-    case tripMode = "Trip Focus"
+    case tripMode = "Trips"
     
     public var id: String { rawValue }
     
@@ -31,6 +31,7 @@ public struct GlobeScreenView: View {
     @State private var showingSaveTappedPinSheet: Bool = false
     @State private var showingQuickAddSheet: Bool = false
     @State private var showingSearchSheet: Bool = false
+    @State private var showingPlaceDetail: Bool = false
     @State private var use3DGlobe: Bool = true
     
     private let hapticFeedback = UIImpactFeedbackGenerator(style: .medium)
@@ -133,9 +134,11 @@ public struct GlobeScreenView: View {
                     SaveGlobePinSheet(latitude: coord.lat, longitude: coord.lon)
                 }
             }
-            .sheet(item: $selectedPlace) { place in
-                NavigationStack {
-                    PlaceDetailView(place: place)
+            .sheet(isPresented: $showingPlaceDetail) {
+                if let place = selectedPlace {
+                    NavigationStack {
+                        PlaceDetailView(place: place)
+                    }
                 }
             }
             .sheet(isPresented: $showingQuickAddSheet) {
@@ -175,7 +178,7 @@ public struct GlobeScreenView: View {
             Spacer()
             
             // Mode Selector Pill
-            HStack(spacing: 4) {
+            HStack(spacing: 2) {
                 ForEach(GlobeDisplayMode.allCases) { mode in
                     Button {
                         hapticFeedback.impactOccurred()
@@ -183,22 +186,17 @@ public struct GlobeScreenView: View {
                             displayMode = mode
                         }
                     } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: mode.icon)
-                            if displayMode == mode {
-                                Text(mode.rawValue)
-                                    .font(.system(size: 12, weight: .semibold))
-                            }
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 7)
-                        .background(displayMode == mode ? WaypointsColors.deepForest : Color.clear)
-                        .foregroundStyle(displayMode == mode ? .white : WaypointsColors.deepForest)
-                        .clipShape(Capsule())
+                        Text(mode.rawValue)
+                            .font(.system(size: 11, weight: .semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(displayMode == mode ? WaypointsColors.deepForest : Color.clear)
+                            .foregroundStyle(displayMode == mode ? .white : WaypointsColors.deepForest)
+                            .clipShape(Capsule())
                     }
                 }
             }
-            .padding(3)
+            .padding(2)
             .background(Color.white)
             .clipShape(Capsule())
             .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
@@ -319,61 +317,74 @@ public struct GlobeScreenView: View {
     
     private func placePreviewCard(_ place: Place) -> some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
+            // Category Emoji or Media Thumbnail Box
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(hex: "#F4EFE6"))
+                    .frame(width: 56, height: 56)
+                Text(place.categoryEmoji)
+                    .font(.system(size: 26))
+            }
+            .shadow(color: .black.opacity(0.04), radius: 3, x: 0, y: 1)
+            
+            VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
-                    Text(place.name)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(WaypointsColors.deepForest)
-                        .lineLimit(1)
+                    Text(place.categoryDisplay.uppercased())
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(Color(hex: "#B27C61"))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color(hex: "#F4EFE6"))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                    
+                    Text(place.provenance.displayLabel)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
                     
                     if place.isFavorite {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 12))
+                        Text("★")
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(WaypointsColors.sunsetAmber)
                     }
                     if place.isVisited {
-                        Image(systemName: "checkmark.seal.fill")
-                            .font(.system(size: 12))
+                        Text("✓")
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(WaypointsColors.deepForest)
                     }
                 }
                 
-                if !place.country.isEmpty {
-                    Text(place.country)
+                Text(place.name)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(WaypointsColors.deepForest)
+                    .lineLimit(1)
+                
+                let locationText = [place.city, place.region, place.country].filter { !$0.isEmpty }.joined(separator: ", ")
+                if !locationText.isEmpty {
+                    Text(locationText)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                }
-                
-                HStack(spacing: 6) {
+                        .lineLimit(1)
+                } else {
                     Text(place.formattedCoordinates)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(.system(size: 11, design: .monospaced))
                         .foregroundStyle(.secondary)
-                    
-                    Text("•")
-                        .foregroundStyle(.tertiary)
-                    
-                    Text(place.provenance.displayLabel)
-                        .font(.system(size: 11))
-                        .foregroundStyle(WaypointsColors.deepForest)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(WaypointsColors.mintMist)
-                        .clipShape(Capsule())
                 }
             }
             
             Spacer()
             
+            // Circular Detail Button matching mockup
             Button {
-                selectedPlace = place
+                hapticFeedback.impactOccurred()
+                showingPlaceDetail = true
             } label: {
-                Text("View")
-                    .font(.system(size: 13, weight: .semibold))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(WaypointsColors.deepForest)
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(.white)
-                    .clipShape(Capsule())
+                    .frame(width: 34, height: 34)
+                    .background(WaypointsColors.deepForest)
+                    .clipShape(Circle())
+                    .shadow(color: WaypointsColors.deepForest.opacity(0.3), radius: 4, x: 0, y: 2)
             }
             
             Button {
@@ -381,13 +392,13 @@ public struct GlobeScreenView: View {
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(.secondary)
-                    .font(.system(size: 20))
+                    .font(.system(size: 18))
             }
         }
-        .padding(14)
+        .padding(12)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 4)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 4)
     }
     
     // MARK: - Bottom Action Bar

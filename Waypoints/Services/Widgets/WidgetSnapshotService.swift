@@ -25,6 +25,7 @@ public enum WidgetSnapshotService {
             .appendingPathComponent(snapshotFileName)
     }
     
+    #if !WIDGET_EXTENSION
     public static func updateSnapshot(
         places: [Place],
         discoveries: [Discovery],
@@ -55,6 +56,7 @@ public enum WidgetSnapshotService {
         try? data.write(to: url, options: .atomic)
         WidgetCenter.shared.reloadAllTimelines()
     }
+    #endif
     
     public static func readSnapshot() -> WidgetDataSnapshot? {
         guard let url = snapshotFileURL,

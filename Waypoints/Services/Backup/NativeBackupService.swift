@@ -109,7 +109,7 @@ public struct NativeItineraryStopRecord: Codable, Sendable {
     public let id: String
     public let sortOrder: Int
     public let placeName: String
-    public let scheduledTime: Date?
+    public let scheduledTime: String
     public let notes: String
     public let isCompleted: Bool
     public let latitude: Double?

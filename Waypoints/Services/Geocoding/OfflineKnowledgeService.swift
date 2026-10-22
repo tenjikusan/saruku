@@ -4,7 +4,7 @@ import Foundation
 /// Explicitly marks candidates with .demoData provenance and isDemo = true so they are never confused with live provider results.
 public final class OfflineKnowledgeService: GeocodingService, @unchecked Sendable {
     public let name = "Offline Demo Index"
-    public let attribution = "Vaypoints Offline Demo Index"
+    public let attribution = "Waypoints Offline Demo Index"
     public var isEnabled: Bool = true
     
     public struct OfflineEntry: Sendable {

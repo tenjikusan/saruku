@@ -1,21 +1,14 @@
 import Foundation
 
-/// Apple Foundation Models & Apple Intelligence integration layer.
-/// Operates strictly on-device with zero external API calls or user data transmission.
-/// On devices without eligible hardware (A17 Pro / M-series / iOS 18+), seamlessly
-/// falls back to on-device Apple NaturalLanguage processing.
+/// Apple Foundation Models & Apple Intelligence integration layer (Optional / Future).
+/// Current Status: Unimplemented optional integration.
+/// Availability returns false; parseWithFoundationModel delegates directly to the NaturalLanguage fallback.
 public final class FoundationModelsService: @unchecked Sendable {
     public static let shared = FoundationModelsService()
     
     /// Detects whether native Apple Foundation Models are enabled and available on the current device.
+    /// Honestly returns false on the iOS 17 baseline.
     public var isAvailableOnCurrentDevice: Bool {
-        #if os(iOS)
-        if #available(iOS 18.0, *) {
-            // Apple Intelligence hardware capability gate
-            // In release, returns true when System Foundation Models are accessible
-            return false // Configured for transparent fallback on iOS 17 baseline
-        }
-        #endif
         return false
     }
     
@@ -54,7 +47,7 @@ public final class FoundationModelsService: @unchecked Sendable {
     // MARK: - Internal Processing & Fallbacks
     
     private func parseWithFoundationModel(caption: String) -> [PlaceClue] {
-        // Structured model extraction on supported hardware
+        // Fallback to NaturalLanguage until Foundation Models are available
         return parseWithNaturalLanguageFallback(caption: caption)
     }
     

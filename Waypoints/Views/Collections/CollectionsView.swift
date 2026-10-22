@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 public enum CollectionViewTab: String, CaseIterable, Identifiable {
+    case overview = "Overview"
     case custom = "My Collections"
     case smart = "Smart Filters"
     case trips = "Trips & Plans"
@@ -20,11 +21,13 @@ public struct SmartCollectionItem: Identifiable {
 public struct CollectionsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \CollectionModel.createdAt) private var collections: [CollectionModel]
+    @Query(sort: \Trip.startDate) private var trips: [Trip]
     @Query private var allPlaces: [Place]
     @Query private var allDiscoveries: [Discovery]
     
-    @State private var selectedTab: CollectionViewTab = .custom
+    @State private var selectedTab: CollectionViewTab = .overview
     @State private var showingAddCollectionSheet = false
+    @State private var showingCreateTripSheet = false
     @State private var isGridView: Bool = true
     
     public init() {}
@@ -56,6 +59,8 @@ public struct CollectionsView: View {
                 
                 // Tab Content
                 switch selectedTab {
+                case .overview:
+                    overviewView
                 case .custom:
                     customCollectionsView
                 case .smart:
@@ -65,15 +70,17 @@ public struct CollectionsView: View {
                 }
             }
             .background(WaypointsColors.sandLight.ignoresSafeArea())
-            .navigationTitle("Organize")
+            .navigationTitle("Collections & Trips")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    if selectedTab == .custom {
+                    if selectedTab == .overview || selectedTab == .custom {
                         HStack(spacing: 12) {
-                            Button {
-                                isGridView.toggle()
-                            } label: {
-                                Image(systemName: isGridView ? "list.bullet" : "square.grid.2x2")
+                            if selectedTab == .custom {
+                                Button {
+                                    isGridView.toggle()
+                                } label: {
+                                    Image(systemName: isGridView ? "list.bullet" : "square.grid.2x2")
+                                }
                             }
                             
                             Button {
@@ -89,7 +96,223 @@ public struct CollectionsView: View {
             .sheet(isPresented: $showingAddCollectionSheet) {
                 AddCollectionSheet()
             }
+            .sheet(isPresented: $showingCreateTripSheet) {
+                CreateTripSheet()
+            }
         }
+    }
+    
+    // MARK: - Overview View (Matching Mockup Design)
+    
+    private var overviewView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // 1. Smart Collections 2x2 Grid
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("SMART COLLECTIONS")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .tracking(0.5)
+                    
+                    let gridSmartItems: [(id: String, name: String, emoji: String, subtitle: String)] = [
+                        ("favorites", "Favorites", "⭐", "\(filteredPlaces(for: "favorites").count) places"),
+                        ("visited", "Visited Passport", "✓", "\(filteredPlaces(for: "visited").count) places"),
+                        ("with_photos", "Photos & Media", "📸", "\(filteredPlaces(for: "with_photos").count) places"),
+                        ("recently_saved", "Recently Saved", "🕒", "\(filteredPlaces(for: "recently_saved").count) recent")
+                    ]
+                    
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        ForEach(gridSmartItems, id: \.id) { item in
+                            if let smartItem = smartCollections.first(where: { $0.id == item.id }) {
+                                NavigationLink {
+                                    SmartCollectionDetailView(item: smartItem, places: filteredPlaces(for: item.id))
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(item.emoji)
+                                            .font(.system(size: 20))
+                                            .padding(.bottom, 2)
+                                        
+                                        Text(item.name)
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundStyle(WaypointsColors.deepForest)
+                                        
+                                        Text(item.subtitle)
+                                            .font(.system(size: 11))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(14)
+                                    .background(Color.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                                    .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 1)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+                
+                // 2. Planned Itineraries Section
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("PLANNED ITINERARIES")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .tracking(0.5)
+                        
+                        Spacer()
+                        
+                        Button {
+                            showingCreateTripSheet = true
+                        } label: {
+                            Text("+ Plan Trip")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(WaypointsColors.deepForest)
+                        }
+                    }
+                    
+                    if trips.isEmpty {
+                        VStack(spacing: 8) {
+                            Text("No trips planned yet.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Button {
+                                showingCreateTripSheet = true
+                            } label: {
+                                Text("Create your first itinerary")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(WaypointsColors.deepForest)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(20)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    } else {
+                        ForEach(trips) { trip in
+                            tripOverviewCard(trip)
+                        }
+                    }
+                }
+                
+                // 3. Custom Collections Preview
+                if !collections.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("MY COLLECTIONS")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(.secondary)
+                                .tracking(0.5)
+                            
+                            Spacer()
+                            
+                            Button {
+                                selectedTab = .custom
+                            } label: {
+                                Text("View All (\(collections.count))")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(WaypointsColors.deepForest)
+                            }
+                        }
+                        
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                            ForEach(collections.prefix(4)) { collection in
+                                NavigationLink {
+                                    CollectionDetailView(collection: collection)
+                                } label: {
+                                    collectionCard(collection)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(16)
+        }
+    }
+    
+    private func tripOverviewCard(_ trip: Trip) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(trip.name)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(WaypointsColors.deepForest)
+                    
+                    Text("\(trip.startDate.formatted(date: .abbreviated, time: .omitted)) – \(trip.endDate.formatted(date: .abbreviated, time: .omitted)) • \(trip.durationInDays) days")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Text("\(trip.places.count) STOPS")
+                    .font(.system(size: 9, weight: .bold))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(WaypointsColors.deepForest.opacity(0.1))
+                    .foregroundStyle(WaypointsColors.deepForest)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            
+            // Stops route preview
+            let sortedDays = trip.days.sorted { $0.dayNumber < $1.dayNumber }
+            if !sortedDays.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(sortedDays.prefix(2)) { day in
+                        if let firstStop = day.sortedStops.first {
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(WaypointsColors.deepForest)
+                                    .frame(width: 6, height: 6)
+                                
+                                Text("Day \(day.dayNumber): \(day.title)")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundStyle(WaypointsColors.deepForest)
+                                
+                                Text("• \(firstStop.placeName)")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
+                }
+                .padding(.leading, 4)
+                .overlay(
+                    Rectangle()
+                        .fill(WaypointsColors.deepForest.opacity(0.2))
+                        .frame(width: 2)
+                        .padding(.vertical, 4),
+                    alignment: .leading
+                )
+            }
+            
+            NavigationLink {
+                TripDetailView(trip: trip)
+            } label: {
+                HStack {
+                    Spacer()
+                    Text("Open Day-by-Day Route")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(WaypointsColors.deepForest)
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(WaypointsColors.deepForest)
+                    Spacer()
+                }
+                .padding(.vertical, 8)
+                .background(WaypointsColors.mintMist.opacity(0.7))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(14)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
     
     // MARK: - Custom Collections
@@ -388,5 +611,101 @@ public struct SmartCollectionDetailView: View {
         .background(WaypointsColors.sandLight)
         .navigationTitle(item.name)
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - Add Collection Sheet
+
+public struct AddCollectionSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    
+    @State private var name: String = ""
+    @State private var selectedIcon: String = "folder.fill"
+    @State private var selectedColorHex: String = "#244B3B"
+    @State private var errorMessage: String? = nil
+    
+    let icons = ["folder.fill", "star.fill", "heart.fill", "airplane", "tent.fill", "cup.and.saucer.fill", "camera.fill", "figure.walk", "mountain.2.fill", "water.waves"]
+    let colors = ["#244B3B", "#B27C61", "#D97447", "#5B8E7D", "#8C6A58", "#386641", "#6A994E", "#BC4749"]
+    
+    public init() {}
+    
+    public var body: some View {
+        NavigationStack {
+            Form {
+                Section("Collection Name") {
+                    TextField("Name (e.g. Kyoto Cafes, Summer Roadtrip)", text: $name)
+                }
+                
+                Section("Icon") {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
+                        ForEach(icons, id: \.self) { icon in
+                            Button {
+                                selectedIcon = icon
+                            } label: {
+                                Image(systemName: icon)
+                                    .font(.system(size: 20))
+                                    .frame(width: 44, height: 44)
+                                    .background(selectedIcon == icon ? Color(hex: selectedColorHex).opacity(0.2) : Color.clear)
+                                    .foregroundStyle(selectedIcon == icon ? Color(hex: selectedColorHex) : .secondary)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
+                Section("Color") {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 12) {
+                        ForEach(colors, id: \.self) { hex in
+                            Button {
+                                selectedColorHex = hex
+                            } label: {
+                                Circle()
+                                    .fill(Color(hex: hex))
+                                    .frame(width: 36, height: 36)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.black.opacity(selectedColorHex == hex ? 0.4 : 0), lineWidth: 3)
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .font(.footnote)
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+            .navigationTitle("New Collection")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Create") {
+                        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !trimmed.isEmpty else {
+                            errorMessage = "Please enter a collection name."
+                            return
+                        }
+                        let col = CollectionModel(name: trimmed, systemIcon: selectedIcon, colorHex: selectedColorHex)
+                        modelContext.insert(col)
+                        try? modelContext.save()
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
     }
 }

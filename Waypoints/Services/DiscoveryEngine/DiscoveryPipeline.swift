@@ -196,7 +196,7 @@ public final class DiscoveryPipeline: @unchecked Sendable {
     
     @MainActor
     public func processDiscovery(discovery: Discovery, context: ModelContext) async {
-        let updated = await identifyLocation(for: discovery)
+        let _ = await identifyLocation(for: discovery)
         try? context.save()
     }
     
