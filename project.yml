@@ -113,9 +113,11 @@ schemes:
         WaypointsShare: all
         WaypointsWidget: all
         WaypointsTests: [test]
+        WaypointsUITests: [test]
     test:
       targets:
         - WaypointsTests
+        - WaypointsUITests
     run:
       config: Debug
     archive:
