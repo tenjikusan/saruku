@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main, 'feature/**', 'release/**' ]
   workflow_dispatch:
+    inputs:
+      runner_label:
+        description: 'Runner label (e.g. macos-latest, xcode-27)'
+        required: false
+        default: 'macos-latest'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,7 +19,7 @@ concurrency:
 jobs:
   build-and-test:
     name: Build & Test on macOS
-    runs-on: macos-latest
+    runs-on: ${{ inputs.runner_label || 'macos-latest' }}
 
     steps:
       - name: Checkout Code
@@ -22,25 +27,32 @@ jobs:
 
       - name: Detect & Select Installed Xcode Version
         run: |
+          echo "=== Active Developer Directory ==="
+          xcode-select -p || true
+
           echo "=== Installed Xcode Applications ==="
-          ls -la /Applications/Xcode* 2>/dev/null || true
-          
-          # Pick the latest installed Xcode release on the runner
+          for xc in /Applications/Xcode*.app; do
+            if [ -d "$xc" ]; then
+              echo "Found: $xc"
+            fi
+          done
+
+          # Automatically select highest installed Xcode version
           LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -n 1)
-          if [ -n "$LATEST_XCODE" ]; then
-            echo "Selecting: $LATEST_XCODE"
+          if [ -d "$LATEST_XCODE" ]; then
+            echo "Selecting highest detected Xcode: $LATEST_XCODE"
             sudo xcode-select -s "$LATEST_XCODE"
           fi
-          
-          echo "=== Active Xcode Version ==="
+
+          echo "=== Active Xcode Version & Build Toolchain ==="
           xcodebuild -version
-          
+
           echo "=== Available iOS Simulators ==="
           xcrun simctl list devices available
 
       - name: Install XcodeGen
         run: |
-          if ! command -v xcodegen &> /dev/null; then
+          if ! command -v xcodegen >/dev/null 2>&1; then
             brew install xcodegen
           fi
           xcodegen --version
@@ -65,14 +77,21 @@ jobs:
       - name: Detect Available iPhone Simulator & Run Tests
         run: |
           set -o pipefail
-          # Find any available iPhone simulator installed in the runtime
-          SIM_NAME=$(xcrun simctl list devices available | grep -E "iPhone" | head -n 1 | sed -E 's/^[[:space:]]*([^(]+)[[:space:]]*\(.*/\1/' | xargs || echo "iPhone 15")
-          echo "Targeting simulator: $SIM_NAME"
-          
+          # Robust POSIX-compliant simulator detection across macOS versions
+          SIM_UUID=$(xcrun simctl list devices available | grep -E "iPhone" | head -n 1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/' || true)
+          if [ -n "$SIM_UUID" ] && [ "$SIM_UUID" != "" ]; then
+            echo "Selected Simulator UDID: $SIM_UUID"
+            DESTINATION="platform=iOS Simulator,id=$SIM_UUID"
+          else
+            echo "Falling back to named simulator destination"
+            DESTINATION="platform=iOS Simulator,name=iPhone 15"
+          fi
+          echo "Testing with destination: $DESTINATION"
+
           xcodebuild test \
             -project Waypoints.xcodeproj \
             -scheme Waypoints \
-            -destination "platform=iOS Simulator,name=$SIM_NAME" \
+            -destination "$DESTINATION" \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
