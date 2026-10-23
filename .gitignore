@@ -34,3 +34,6 @@ fastlane/test_output
 # Backup artifacts
 *.bak
 *~
+
+# Local Agent Workspace Rules
+GEMINI.md
