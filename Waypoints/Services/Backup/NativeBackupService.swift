@@ -454,11 +454,11 @@ public enum NativeBackupService {
                             id: sRecord.id,
                             sortOrder: sRecord.sortOrder,
                             placeName: sRecord.placeName,
-                            scheduledTime: sRecord.scheduledTime,
                             notes: sRecord.notes,
+                            scheduledTime: sRecord.scheduledTime,
                             isCompleted: sRecord.isCompleted,
-                            latitude: sRecord.latitude,
-                            longitude: sRecord.longitude
+                            latitude: sRecord.latitude ?? 0.0,
+                            longitude: sRecord.longitude ?? 0.0
                         )
                         stop.day = day
                         day.stops.append(stop)
@@ -479,8 +479,8 @@ public enum NativeBackupService {
                     note: jRecord.note,
                     visitDate: jRecord.visitDate,
                     rating: jRecord.rating,
-                    placeName: jRecord.placeName,
                     imageFileNames: jRecord.imageFileNames,
+                    placeName: jRecord.placeName,
                     createdAt: jRecord.createdAt
                 )
                 context.insert(entry)

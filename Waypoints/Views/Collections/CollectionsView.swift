@@ -581,7 +581,7 @@ public struct SmartCollectionDetailView: View {
                 }
             } else {
                 List {
-                    ForEach(places) { place in
+                    ForEach(places, id: \.id) { place in
                         NavigationLink {
                             PlaceDetailView(place: place)
                         } label: {

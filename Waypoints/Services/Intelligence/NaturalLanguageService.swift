@@ -17,7 +17,7 @@ public final class NaturalLanguageService: @unchecked Sendable {
         tagger.string = trimmed
         
         let options: NLTagger.Options = [.omitPunctuation, .omitWhitespace, .joinNames]
-        let tags: [NLTag] = [.place, .organization]
+        let tags: [NLTag] = [.placeName, .organizationName]
         
         tagger.enumerateTags(in: trimmed.startIndex..<trimmed.endIndex, unit: .word, scheme: .nameType, options: options) { tag, tokenRange in
             if let tag, tags.contains(tag) {
@@ -27,7 +27,7 @@ public final class NaturalLanguageService: @unchecked Sendable {
                     recognizedEntities.append(PlaceClue(
                         name: entityName,
                         source: "apple_natural_language",
-                        confidence: tag == .place ? "high" : "medium",
+                        confidence: tag == .placeName ? "high" : "medium",
                         evidence: "Apple NaturalLanguage identified \(tag.rawValue) entity: \"\(entityName)\""
                     ))
                 }

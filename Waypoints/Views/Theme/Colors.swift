@@ -126,6 +126,8 @@ public enum WaypointsColors {
     public static let sandLight = background
     public static let cardBackground = surface
     public static let borderLight = border
+    public static let mintMist = Color(hex: "#E8F0EC")
+    public static let sunsetAmber = Color(hex: "#E09F3E")
 }
 
 // MARK: - Swift Extension for Color convenience
@@ -137,4 +139,41 @@ public extension Color {
     static let waypointsOcean = WaypointsColors.deepOcean
     static let waypointsPorcelain = WaypointsColors.backgroundPorcelain
     static let waypointsGraphite = WaypointsColors.textGraphite
+    static let waypointsSage = Color(hex: "#7E9B88")
+}
+
+// MARK: - Waypoints Dynamic Color Scheme Theme Helper
+
+public enum WaypointsTheme {
+    public static func background(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? WaypointsColors.darkBackground : WaypointsColors.backgroundPorcelain
+    }
+    
+    public static func surface(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? WaypointsColors.darkCardSurface : WaypointsColors.cardSurface
+    }
+    
+    public static func cardBorder(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? WaypointsColors.darkBorder : WaypointsColors.borderSlate
+    }
+    
+    public static func textPrimary(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? WaypointsColors.darkTextPrimary : WaypointsColors.textGraphite
+    }
+    
+    public static func textSecondary(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? WaypointsColors.darkTextSecondary : WaypointsColors.secondaryMuted
+    }
+}
+
+// MARK: - Label Convenience Extension
+
+public extension Label where Title == Text, Icon == Image {
+    init<S>(_ title: S, systemName: String) where S: StringProtocol {
+        self.init(title, systemImage: systemName)
+    }
+    
+    init(_ titleKey: LocalizedStringKey, systemName: String) {
+        self.init(titleKey, systemImage: systemName)
+    }
 }

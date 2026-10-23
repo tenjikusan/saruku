@@ -27,6 +27,15 @@ public enum CoordinateValidator {
         return longitude >= -180.0 && longitude <= 180.0
     }
     
+    /// Wraps a longitude value (in degrees) to fall strictly between -180 and 180.
+    public static func wrapLongitude(_ longitude: Double) -> Double {
+        var wrapped = (longitude + 180.0).truncatingRemainder(dividingBy: 360.0)
+        if wrapped < 0 {
+            wrapped += 360.0
+        }
+        return wrapped - 180.0
+    }
+    
     /// Validates whether numerical latitude and longitude fall strictly within standard geographic bounds.
     public static func isValidCoordinate(latitude: Double, longitude: Double) -> Bool {
         isValidLatitude(latitude) && isValidLongitude(longitude)

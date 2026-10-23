@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-public final class Place {
+public final class Place: Identifiable {
     @Attribute(.unique) public var id: String
     public var name: String
     public var city: String

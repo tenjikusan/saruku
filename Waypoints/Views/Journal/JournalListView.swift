@@ -265,12 +265,13 @@ public struct AddJournalEntrySheet: View {
                 }
                 
                 Section("Photos") {
+                    let photoLabelText = savedImageFileNames.isEmpty ? "Attach Photos" : "\(savedImageFileNames.count) Photos Attached"
                     PhotosPicker(
                         selection: $selectedPhotoItems,
                         maxSelectionCount: 5,
                         matching: .images
                     ) {
-                        Label(savedImageFileNames.isEmpty ? "Attach Photos" : "\(savedImageFileNames.count) Photos Attached", systemName: "photo.badge.plus")
+                        Label(photoLabelText, systemImage: "photo.badge.plus")
                     }
                     .onChange(of: selectedPhotoItems) { _, items in
                         loadPhotos(items)

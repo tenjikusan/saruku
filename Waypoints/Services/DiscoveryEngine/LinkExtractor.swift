@@ -15,6 +15,21 @@ public struct PlaceClue: Equatable, Sendable {
     public let source: String
     public let confidence: String
     public let evidence: String
+    public var context: String { evidence }
+    
+    public init(name: String, source: String = "Natural Language", confidence: String = "medium", evidence: String = "") {
+        self.name = name
+        self.source = source
+        self.confidence = confidence
+        self.evidence = evidence
+    }
+    
+    public init(name: String, context: String) {
+        self.name = name
+        self.source = "Foundation Model"
+        self.confidence = "high"
+        self.evidence = context
+    }
 }
 
 public enum LinkExtractor {
