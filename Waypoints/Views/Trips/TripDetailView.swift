@@ -185,15 +185,6 @@ public struct TripDetailView: View {
                         .overlay(Capsule().stroke(isSelected ? Color.clear : WaypointsColors.border, lineWidth: 1))
                     }
                 }
-            }
-        }
-    }
-                        .background(isSelected ? WaypointsColors.deepForest : Color.white)
-                        .foregroundStyle(isSelected ? .white : WaypointsColors.deepForest)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 1)
-                    }
-                }
                 
                 // Add Day Button
                 Button {
@@ -203,9 +194,10 @@ public struct TripDetailView: View {
                         .font(.system(size: 14, weight: .semibold))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
-                        .background(Color.white)
-                        .foregroundStyle(WaypointsColors.deepForest)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .background(WaypointsColors.surface)
+                        .foregroundStyle(WaypointsColors.brandPrimary)
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(WaypointsColors.border, lineWidth: 1))
                         .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 1)
                 }
             }

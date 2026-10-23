@@ -50,8 +50,8 @@ public final class OfflineKnowledgeService: GeocodingService, @unchecked Sendabl
                 score = 50
             } else {
                 let qWords = q.components(separatedBy: " ").filter { $0.count > 2 }
-                let matchedWords = qWords.filter {
-                    nameClean.contains($0) || countryClean.contains($0) || aliasesClean.contains(where: { a in a.contains($0) })
+                let matchedWords = qWords.filter { word in
+                    nameClean.contains(word) || countryClean.contains(word) || aliasesClean.contains(where: { a in a.contains(word) })
                 }
                 if !matchedWords.isEmpty {
                     score = 30 + matchedWords.count * 10
