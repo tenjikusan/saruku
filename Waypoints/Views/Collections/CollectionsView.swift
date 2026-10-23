@@ -70,7 +70,7 @@ public struct CollectionsView: View {
                 }
             }
             .background(WaypointsColors.background.ignoresSafeArea())
-            .navigationTitle("Collections & Trips")
+            .navigationTitle("Collections")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     if selectedTab == .overview || selectedTab == .custom {

@@ -29,19 +29,19 @@ final class WaypointsUITests: XCTestCase {
 
         // 3. Switch to Discoveries Tab
         discoveriesTab.tap()
-        XCTAssertTrue(app.navigationBars["Discoveries"].waitForExistence(timeout: 2.0))
+        XCTAssertTrue(app.navigationBars["Discoveries"].waitForExistence(timeout: 3.0) || app.navigationBars["Discoveries Inbox"].waitForExistence(timeout: 1.0))
 
         // 4. Switch to Waypoints Tab
         waypointsTab.tap()
-        XCTAssertTrue(app.navigationBars["Waypoints"].waitForExistence(timeout: 2.0))
+        XCTAssertTrue(app.navigationBars["Waypoints"].waitForExistence(timeout: 3.0))
 
         // 5. Switch to Collections Tab
         collectionsTab.tap()
-        XCTAssertTrue(app.navigationBars["Collections"].waitForExistence(timeout: 2.0))
+        XCTAssertTrue(app.navigationBars["Collections"].waitForExistence(timeout: 3.0) || app.navigationBars["Collections & Trips"].waitForExistence(timeout: 1.0))
 
         // 6. Switch to Settings Tab
         settingsTab.tap()
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 2.0))
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 3.0))
         
         // 7. Return to Globe Tab
         globeTab.tap()

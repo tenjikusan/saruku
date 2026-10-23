@@ -86,7 +86,7 @@ public struct DiscoveriesListView: View {
                 }
             }
             .background(WaypointsColors.background.ignoresSafeArea())
-            .navigationTitle("Discoveries Inbox")
+            .navigationTitle("Discoveries")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {

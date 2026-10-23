@@ -140,6 +140,10 @@ public final class Place {
         }
     }
     
+    public var photoFileNames: [String] {
+        imageFileNames
+    }
+    
     public var sourceReferences: [SourceReference] {
         get {
             guard let json = sourceReferencesJSON, let data = json.data(using: .utf8) else { return [] }

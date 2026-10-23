@@ -16,6 +16,22 @@ public struct PendingSharedItem: Identifiable, Sendable {
     }
 }
 
+public struct ExtensionSharedItem: Codable, Sendable {
+    public let id: String
+    public let urlString: String?
+    public let text: String?
+    public let imageFileName: String?
+    public let timestamp: Date
+    
+    public init(id: String = UUID().uuidString, urlString: String? = nil, text: String? = nil, imageFileName: String? = nil, timestamp: Date = Date()) {
+        self.id = id
+        self.urlString = urlString
+        self.text = text
+        self.imageFileName = imageFileName
+        self.timestamp = timestamp
+    }
+}
+
 public final class AppGroupShareQueue: @unchecked Sendable {
     public static let shared = AppGroupShareQueue()
     

@@ -32,6 +32,10 @@ public enum CoordinateProvenance: String, Codable, CaseIterable, Sendable {
         }
     }
     
+    public var displayLabel: String {
+        displayName
+    }
+    
     public var badgeIcon: String {
         switch self {
         case .verifiedLink: return "link.badge.plus"
@@ -41,5 +45,9 @@ public enum CoordinateProvenance: String, Codable, CaseIterable, Sendable {
         case .demoData: return "sparkles"
         case .cloudKitSync: return "icloud.fill"
         }
+    }
+    
+    public var systemIcon: String {
+        badgeIcon
     }
 }

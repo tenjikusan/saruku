@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       runner_label:
-        description: 'Runner label (e.g. macos-latest, xcode-27)'
+        description: 'Runner label (e.g. macos-latest, macos-14, macos-15)'
         required: false
         default: 'macos-latest'
 

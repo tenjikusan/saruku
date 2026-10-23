@@ -72,6 +72,7 @@ public final class Discovery {
         evidence: [String] = [],
         confirmedPlaceId: String? = nil,
         imageFilePath: String? = nil,
+        imageFileNames: [String] = [],
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -89,6 +90,7 @@ public final class Discovery {
         self.candidates = candidates
         self.selectedCandidate = selectedCandidate
         self.evidence = evidence
+        self.imageFileNames = imageFileNames
     }
     
     public var status: DiscoveryStatus {
