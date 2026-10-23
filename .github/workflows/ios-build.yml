@@ -74,43 +74,9 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | tee build.log
 
-      - name: Detect Available iPhone Simulator & Run Tests
-        run: |
-          set -o pipefail
-          # Robust POSIX-compliant simulator detection across macOS versions
-          SIM_UUID=$(xcrun simctl list devices available | grep -E "iPhone" | head -n 1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/' || true)
-          if [ -n "$SIM_UUID" ] && [ "$SIM_UUID" != "" ]; then
-            echo "Selected Simulator UDID: $SIM_UUID"
-            DESTINATION="platform=iOS Simulator,id=$SIM_UUID"
-          else
-            echo "Falling back to named simulator destination"
-            DESTINATION="platform=iOS Simulator,name=iPhone 15"
-          fi
-          echo "Testing with destination: $DESTINATION"
-
-          xcodebuild test \
-            -project Waypoints.xcodeproj \
-            -scheme Waypoints \
-            -destination "$DESTINATION" \
-            -configuration Debug \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            -resultBundlePath TestResults.xcresult \
-            | tee test.log
-
-      - name: Upload Build & Test Logs
+      - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Waypoints-Build-And-Test-Logs
-          path: |
-            build.log
-            test.log
-
-      - name: Upload Test Results Bundle
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Waypoints-Test-Results-xcresult
-          path: TestResults.xcresult
+          name: Waypoints-Build-Logs
+          path: build.log

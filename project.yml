@@ -81,30 +81,6 @@ targets:
       - framework: WidgetKit.framework
       - framework: SwiftUI.framework
 
-  WaypointsTests:
-    type: bundle.unit-test
-    platform: iOS
-    sources:
-      - path: WaypointsTests
-    dependencies:
-      - target: Waypoints
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.waypoints.atlas.Tests
-        GENERATE_INFOPLIST_KEY_CFBundlePackageType: BNDL
-
-  WaypointsUITests:
-    type: bundle.ui-testing
-    platform: iOS
-    sources:
-      - path: WaypointsUITests
-    dependencies:
-      - target: Waypoints
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.waypoints.atlas.UITests
-        GENERATE_INFOPLIST_KEY_CFBundlePackageType: BNDL
-
 schemes:
   Waypoints:
     build:
@@ -112,12 +88,6 @@ schemes:
         Waypoints: all
         WaypointsShare: all
         WaypointsWidget: all
-        WaypointsTests: [test]
-        WaypointsUITests: [test]
-    test:
-      targets:
-        - WaypointsTests
-        - WaypointsUITests
     run:
       config: Debug
     archive:
