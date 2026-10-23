@@ -158,14 +158,14 @@ public struct SceneKitGlobeView: UIViewRepresentable {
     // MARK: - Texture Resource Loader
     
     private func loadBundledEarthTexture() -> UIImage? {
-        let possiblePaths = [
+        let possiblePaths: [String?] = [
             Bundle.main.path(forResource: "earth_diffuse", ofType: "jpg"),
             Bundle.main.path(forResource: "earth_diffuse", ofType: "jpg", inDirectory: "Resources"),
             Bundle.main.bundleURL.appendingPathComponent("Resources/earth_diffuse.jpg").path,
             Bundle.main.bundleURL.appendingPathComponent("earth_diffuse.jpg").path
         ]
-        for path in possiblePaths {
-            if let p = path, FileManager.default.fileExists(atPath: p), let img = UIImage(contentsOfFile: p) {
+        for case let p? in possiblePaths {
+            if FileManager.default.fileExists(atPath: p), let img = UIImage(contentsOfFile: p) {
                 return img
             }
         }

@@ -32,6 +32,8 @@ public struct ExtensionSharedItem: Codable, Sendable {
     }
 }
 
+public typealias SharedItem = ExtensionSharedItem
+
 public final class AppGroupShareQueue: @unchecked Sendable {
     public static let shared = AppGroupShareQueue()
     
@@ -75,6 +77,24 @@ public final class AppGroupShareQueue: @unchecked Sendable {
                 imageFileName: item.imageFileName,
                 timestamp: item.timestamp
             )
+        }
+    }
+    
+    public func enqueue(_ item: ExtensionSharedItem) {
+        lock.lock()
+        defer { lock.unlock() }
+        
+        guard let container = sharedContainerURL else { return }
+        let fileURL = container.appendingPathComponent(queueFileName)
+        var currentItems: [ExtensionSharedItem] = []
+        if FileManager.default.fileExists(atPath: fileURL.path),
+           let data = try? Data(contentsOf: fileURL),
+           let existing = try? JSONDecoder().decode([ExtensionSharedItem].self, from: data) {
+            currentItems = existing
+        }
+        currentItems.append(item)
+        if let encoded = try? JSONEncoder().encode(currentItems) {
+            try? encoded.write(to: fileURL)
         }
     }
 }
